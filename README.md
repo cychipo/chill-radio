@@ -32,12 +32,11 @@ Luồng xử lý hiện tại:
 
 1. Nhận TikTok URL từ terminal.
 2. Phân loại URL thành video, profile/kênh, hoặc playlist/collection.
-3. Dùng `yt-dlp` để lấy metadata và audio stream.
-4. Với video URL: phát một video.
-5. Với profile/kênh hoặc playlist/collection: phát tuần tự các video trích xuất được.
-6. Hiển thị tên bài, kênh/uploader, thời lượng nếu có trước mỗi video.
-7. Phát audio bằng `mpv` chạy nền.
-8. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
+3. Với video URL: đưa URL gốc trực tiếp cho `mpv` + native `yt-dlp` hook để bắt đầu phát nhanh hơn.
+4. Với profile/kênh hoặc playlist/collection: dùng `yt-dlp` để trích xuất queue rồi phát tuần tự các video.
+5. Hiển thị tên bài, kênh/uploader, thời lượng nếu có trước mỗi video; riêng video fast path hiển thị tối giản trước khi phát.
+6. Phát audio bằng `mpv` chạy nền.
+7. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
 
 ### Sau MVP
 

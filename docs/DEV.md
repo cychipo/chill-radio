@@ -24,6 +24,12 @@ npm run dev -- play "https://www.tiktok.com/@creator"
 npm run dev -- play "https://www.tiktok.com/@creator/playlist/name-123"
 ```
 
+For playback startup diagnostics, enable timing logs:
+
+```bash
+CHILL_RADIO_TIMING=1 npm run dev -- play "https://www.tiktok.com/@creator/video/123"
+```
+
 ## Package layout
 
 - `src/cli.ts`: CLI program setup.

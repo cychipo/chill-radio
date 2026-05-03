@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classifyTikTokPath, parseTikTokInput } from '../src/commands/play.js';
+import { classifyTikTokPath, createFastTikTokVideoMedia, parseTikTokInput } from '../src/commands/play.js';
 import { UserFacingError } from '../src/ui/errors.js';
 
 describe('parseTikTokInput', () => {
@@ -43,6 +43,21 @@ describe('parseTikTokInput', () => {
     expect(() => parseTikTokInput('https://youtube.com/watch?v=1')).toThrow(
       'TikTok is currently the only supported platform.',
     );
+  });
+});
+
+describe('createFastTikTokVideoMedia', () => {
+  it('creates minimal media from the original video URL', () => {
+    expect(
+      createFastTikTokVideoMedia({
+        url: 'https://www.tiktok.com/@radio/video/123',
+        kind: 'video',
+      }),
+    ).toEqual({
+      title: 'TikTok video',
+      streamUrl: 'https://www.tiktok.com/@radio/video/123',
+      webpageUrl: 'https://www.tiktok.com/@radio/video/123',
+    });
   });
 });
 

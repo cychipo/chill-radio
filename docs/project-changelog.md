@@ -15,3 +15,5 @@
 - Added native `yt-dlp` postinstall download to avoid Python 3.10+ runtime failures.
 - Added bundled macOS `mpv` postinstall download for zero-config playback on macOS.
 - Fixed TikTok playback exit code 2 by letting `mpv` use the native `yt-dlp` hook with the original page URL instead of a direct CDN URL.
+- Reduced single TikTok video startup latency by skipping pre-extraction and sending the page URL directly to `mpv`.
+- Added optional playback timing diagnostics to isolate TikTok startup delay without changing normal output.
