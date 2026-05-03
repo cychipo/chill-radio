@@ -75,15 +75,97 @@ src/
 
 ## Cài đặt và phát triển
 
+### 1. Cài dependency
+
 ```bash
 npm install
+```
+
+`postinstall` hiện chỉ kiểm tra platform và thông báo cách resolve binary. Runtime sẽ tìm `mpv` trong `vendor/bin` trước, sau đó fallback sang `mpv` trên `PATH`.
+
+### 2. Chạy kiểm tra code
+
+```bash
 npm run typecheck
 npm run build
 npm test
+```
+
+Ý nghĩa:
+
+- `npm run typecheck`: kiểm tra TypeScript không emit file.
+- `npm run build`: build source sang `dist/`.
+- `npm test`: chạy unit test deterministic, không phụ thuộc live YouTube/TikTok/SoundCloud.
+
+### 3. Chạy CLI ở chế độ dev
+
+Dùng `tsx` để chạy trực tiếp source TypeScript:
+
+```bash
+npm run dev -- --help
 npm run dev -- play <url>
 ```
 
-Runtime hiện tìm `mpv` trong `vendor/bin` trước, sau đó fallback sang `mpv` trên `PATH`. Luồng tự tải `mpv` portable vẫn đang chờ xác minh nguồn phát hành và checksum trước khi publish.
+Ví dụ test lỗi input nhanh:
+
+```bash
+npm run dev -- play not-a-url
+```
+
+Kỳ vọng: CLI trả lỗi dễ hiểu và exit non-zero, không in stack trace thô.
+
+### 4. Test playback thật trước khi publish
+
+Để test phát nhạc thật trên máy dev:
+
+1. Cài `mpv` vào máy nếu chưa có.
+2. Chọn một URL media public mà `yt-dlp` hỗ trợ.
+3. Chạy:
+
+```bash
+npm run dev -- play "https://example.com/media-url"
+```
+
+Kỳ vọng:
+
+- CLI in thông tin bài đang phát.
+- `yt-dlp` lấy được audio stream.
+- `mpv` bắt đầu phát audio.
+- Khi URL bị chặn/không hỗ trợ, CLI báo lỗi ngắn gọn.
+
+Không dùng live URL trong unit test mặc định vì các nền tảng media thay đổi thường xuyên, có thể cần cookies/auth, hoặc bị giới hạn vùng.
+
+### 5. Smoke test bản build
+
+Sau khi `npm run build`, có thể chạy CLI build bằng Node:
+
+```bash
+node dist/src/cli.js --help
+node dist/src/cli.js play <url>
+```
+
+Nếu dùng npm package local để giả lập cài đặt global:
+
+```bash
+npm pack
+npm install -g ./chill-radio-0.1.0.tgz
+chill-radio --help
+chill-radio play <url>
+```
+
+### 6. Checklist trước khi đẩy product
+
+- `npm install` chạy thành công trên môi trường sạch.
+- `npm run typecheck` pass.
+- `npm run build` pass.
+- `npm test` pass.
+- `npm run dev -- --help` hiển thị đúng command.
+- `npm run dev -- play not-a-url` trả lỗi dễ hiểu.
+- Test thủ công ít nhất một URL public phát được với `mpv`.
+- Không commit `node_modules`, `dist`, `vendor/bin`, token, API key, hoặc file `.env`.
+- Kiểm tra lại `npm audit`; không dùng `npm audit fix --force` nếu chưa đánh giá breaking changes.
+
+Luồng tự tải `mpv` portable vẫn đang chờ xác minh nguồn phát hành, license, archive layout và checksum trước khi publish.
 
 ## Tài liệu liên quan
 
