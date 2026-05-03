@@ -1,0 +1,36 @@
+{
+  "name": "chill-radio",
+  "version": "0.1.0",
+  "description": "Terminal music player powered by yt-dlp and mpv.",
+  "type": "module",
+  "bin": {
+    "chill-radio": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "scripts",
+    "vendor"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run tests",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "youtube-dl-exec": "^3.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
+  }
+}
