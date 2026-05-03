@@ -1,5 +1,5 @@
 import type { Command } from 'commander';
-import { playAudio } from '../services/audio-player.js';
+import { playAudioWithDirectFallback } from '../services/audio-player.js';
 import { playMediaQueue } from '../services/media-queue-player.js';
 import { extractTikTokMedia } from '../services/media-extractor.js';
 import type { MediaInfo } from '../types/media.js';
@@ -38,11 +38,26 @@ export function registerPlayCommand(program: Command): void {
 }
 
 export async function playTikTokVideoFast(input: TikTokInput): Promise<void> {
-  markTiming('using TikTok video fast path');
-  const media = createFastTikTokVideoMedia(input);
-  console.log(renderNowPlaying(media));
-  markTiming('starting player');
-  await playAudio(media);
+  markTiming('using TikTok video direct stream path');
+
+  try {
+    markTiming('extracting direct TikTok stream');
+    const [media] = await extractTikTokMedia(input);
+    markTiming('direct TikTok stream extracted');
+    console.log(renderNowPlaying(media));
+    markTiming('starting player');
+    await playAudioWithDirectFallback(media);
+  } catch (error) {
+    if (!(error instanceof UserFacingError)) {
+      throw error;
+    }
+
+    console.error(`Could not prepare direct TikTok stream. Falling back to yt-dlp resolver... ${error.message}`);
+    const media = createFastTikTokVideoMedia(input);
+    console.log(renderNowPlaying(media));
+    markTiming('starting fallback player');
+    await playAudioWithDirectFallback(media);
+  }
 }
 
 export function createFastTikTokVideoMedia(input: TikTokInput): MediaInfo {

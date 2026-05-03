@@ -12,6 +12,7 @@ export type ExtractedMedia = {
   url?: unknown;
   webpage_url?: unknown;
   original_url?: unknown;
+  http_headers?: unknown;
   entries?: unknown;
 };
 
@@ -65,6 +66,7 @@ export function normalizeMediaInfo(raw: ExtractedMedia, fallbackUrl: string): Me
     durationSeconds: numberValue(raw.duration),
     streamUrl,
     webpageUrl: stringValue(raw.webpage_url) ?? stringValue(raw.original_url) ?? fallbackUrl,
+    httpHeaders: recordStringValues(raw.http_headers),
   };
 }
 
@@ -98,4 +100,13 @@ function stringValue(value: unknown): string | undefined {
 
 function numberValue(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function recordStringValues(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const entries = Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string');
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }

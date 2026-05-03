@@ -17,3 +17,5 @@
 - Fixed TikTok playback exit code 2 by letting `mpv` use the native `yt-dlp` hook with the original page URL instead of a direct CDN URL.
 - Reduced single TikTok video startup latency by skipping pre-extraction and sending the page URL directly to `mpv`.
 - Added optional playback timing diagnostics to isolate TikTok startup delay without changing normal output.
+- Added direct TikTok stream playback attempt with preserved `yt-dlp` HTTP headers and fallback to the reliable `mpv`/native `yt-dlp` hook.
+- Added clear direct-stream fallback messages for TikTok CDN 403 blocks, timeouts, signals, and non-zero `mpv` exits.

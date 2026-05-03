@@ -11,6 +11,11 @@ describe('normalizeMediaInfo', () => {
           duration: 125,
           url: 'https://cdn.example/audio.m4a',
           webpage_url: 'https://example.com/watch',
+          http_headers: {
+            Referer: 'https://www.tiktok.com/',
+            'User-Agent': 'Mozilla/5.0',
+            Count: 1,
+          },
         },
         'https://fallback.example/watch',
       ),
@@ -20,6 +25,10 @@ describe('normalizeMediaInfo', () => {
       durationSeconds: 125,
       streamUrl: 'https://cdn.example/audio.m4a',
       webpageUrl: 'https://example.com/watch',
+      httpHeaders: {
+        Referer: 'https://www.tiktok.com/',
+        'User-Agent': 'Mozilla/5.0',
+      },
     });
   });
 
