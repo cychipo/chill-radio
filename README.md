@@ -1,6 +1,6 @@
 # chill-radio
 
-`chill-radio` là CLI phát nhạc ngay trong terminal dành cho lập trình viên. Mục tiêu là cho phép nghe nhạc từ YouTube, SoundCloud, TikTok và các nguồn được `yt-dlp` hỗ trợ mà không cần mở trình duyệt, không tốn nhiều RAM/CPU, và hướng tới trải nghiệm “cài là chạy”.
+`chill-radio` là CLI phát nhạc ngay trong terminal dành cho lập trình viên. MVP hiện bắt đầu với TikTok: phát link video, link kênh/user profile, và link playlist/collection khi `yt-dlp` hỗ trợ. Mục tiêu dài hạn là mở rộng sang YouTube, SoundCloud và các nguồn được `yt-dlp` hỗ trợ mà không cần mở trình duyệt, không tốn nhiều RAM/CPU, và hướng tới trải nghiệm “cài là chạy”.
 
 ## Mục tiêu sản phẩm
 
@@ -25,20 +25,23 @@ Các tính năng như playlist, thanh tiến trình và điều khiển bằng p
 ### MVP
 
 ```bash
-chill-radio play <url>
+chill-radio play <tiktok-url>
 ```
 
-Luồng xử lý dự kiến:
+Luồng xử lý hiện tại:
 
-1. Nhận URL từ terminal.
-2. Dùng `yt-dlp` để lấy metadata và audio stream.
-3. Hiển thị tên bài, kênh/uploader, thời lượng nếu có.
-4. Phát audio bằng `mpv` chạy nền.
-5. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
+1. Nhận TikTok URL từ terminal.
+2. Phân loại URL thành video, profile/kênh, hoặc playlist/collection.
+3. Dùng `yt-dlp` để lấy metadata và audio stream.
+4. Với video URL: phát một video.
+5. Với profile/kênh hoặc playlist/collection: phát tuần tự các video trích xuất được.
+6. Hiển thị tên bài, kênh/uploader, thời lượng nếu có trước mỗi video.
+7. Phát audio bằng `mpv` chạy nền.
+8. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
 
 ### Sau MVP
 
-- Phát playlist/kênh và tự chuyển bài.
+- Mở rộng sang YouTube và SoundCloud.
 - Thanh tiến trình dạng `[=====>----] 1:20 / 3:45`.
 - Phím tắt trong terminal: pause/resume, tua tới/lùi.
 - Post-install tự tải binary phù hợp cho macOS, Linux, Windows.
@@ -81,7 +84,7 @@ src/
 npm install
 ```
 
-`postinstall` hiện chỉ kiểm tra platform và thông báo cách resolve binary. Runtime sẽ tìm `mpv` trong `vendor/bin` trước, sau đó fallback sang `mpv` trên `PATH`.
+`postinstall` hiện tải native `yt-dlp` binary vào `vendor/bin/yt-dlp/<platform-arch>/` để tránh phụ thuộc Python hệ thống quá cũ. Trên macOS, `postinstall` cũng tải bundled `mpv` vào `vendor/bin/mpv/<platform-arch>/`. Runtime sẽ tìm `mpv` trong `vendor/bin` trước, sau đó fallback sang `mpv` trên `PATH`.
 
 ### 2. Chạy kiểm tra code
 
@@ -103,7 +106,7 @@ Dùng `tsx` để chạy trực tiếp source TypeScript:
 
 ```bash
 npm run dev -- --help
-npm run dev -- play <url>
+npm run dev -- play <tiktok-url>
 ```
 
 Ví dụ test lỗi input nhanh:
@@ -118,22 +121,26 @@ Kỳ vọng: CLI trả lỗi dễ hiểu và exit non-zero, không in stack trac
 
 Để test phát nhạc thật trên máy dev:
 
-1. Cài `mpv` vào máy nếu chưa có.
-2. Chọn một URL media public mà `yt-dlp` hỗ trợ.
-3. Chạy:
+1. Chạy `npm install` hoặc `node scripts/postinstall.js` để chuẩn bị native `yt-dlp` và bundled `mpv` trên macOS.
+2. Chọn một TikTok URL public mà `yt-dlp` hỗ trợ.
+3. Chạy một hoặc nhiều lệnh tùy loại URL:
 
 ```bash
-npm run dev -- play "https://example.com/media-url"
+npm run dev -- play "https://www.tiktok.com/@creator/video/123"
+npm run dev -- play "https://www.tiktok.com/@creator"
+npm run dev -- play "https://www.tiktok.com/@creator/playlist/name-123"
 ```
 
 Kỳ vọng:
 
-- CLI in thông tin bài đang phát.
+- CLI in thông tin bài đang phát trước mỗi video.
 - `yt-dlp` lấy được audio stream.
+- Video URL phát một item.
+- Profile/kênh hoặc playlist/collection phát tuần tự các item trích xuất được.
 - `mpv` bắt đầu phát audio.
-- Khi URL bị chặn/không hỗ trợ, CLI báo lỗi ngắn gọn.
+- Khi URL bị chặn/không hỗ trợ hoặc queue rỗng, CLI báo lỗi ngắn gọn.
 
-Không dùng live URL trong unit test mặc định vì các nền tảng media thay đổi thường xuyên, có thể cần cookies/auth, hoặc bị giới hạn vùng.
+Không dùng live URL trong unit test mặc định vì TikTok thay đổi thường xuyên, có thể cần cookies/auth, hoặc bị giới hạn vùng.
 
 ### 5. Smoke test bản build
 
@@ -141,7 +148,7 @@ Sau khi `npm run build`, có thể chạy CLI build bằng Node:
 
 ```bash
 node dist/src/cli.js --help
-node dist/src/cli.js play <url>
+node dist/src/cli.js play <tiktok-url>
 ```
 
 Nếu dùng npm package local để giả lập cài đặt global:
@@ -150,7 +157,7 @@ Nếu dùng npm package local để giả lập cài đặt global:
 npm pack
 npm install -g ./chill-radio-0.1.0.tgz
 chill-radio --help
-chill-radio play <url>
+chill-radio play <tiktok-url>
 ```
 
 ### 6. Checklist trước khi đẩy product

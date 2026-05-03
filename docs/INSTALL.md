@@ -6,6 +6,10 @@
 npm install -g chill-radio
 ```
 
-Current setup uses `youtube-dl-exec` for `yt-dlp` and looks for `mpv` in `vendor/bin` first, then falls back to `mpv` on `PATH`. If playback fails to start, install `mpv` for your platform and re-run the command.
+Current setup downloads the native `yt-dlp` release binary into `vendor/bin/yt-dlp/<platform-arch>/` during `postinstall`, then uses `youtube-dl-exec` with that binary. This avoids depending on macOS system Python 3.9, which is too old for current `yt-dlp`.
 
-Supported runtime targets are macOS, Linux, and Windows on x64 or arm64. Automatic bundled `mpv` downloads are not enabled yet because the release source and checksum policy must be finalized before publishing.
+On macOS x64/arm64, `postinstall` also downloads the official `mpv-player/mpv` release archive and copies the bundled executable to `vendor/bin/mpv/<platform-arch>/mpv`. Runtime looks for `mpv` in `vendor/bin` first, then falls back to `mpv` on `PATH`.
+
+Supported runtime targets are macOS, Linux, and Windows on x64 or arm64. Bundled `mpv` download is currently enabled only for macOS because a verified portable Linux source has not been selected yet.
+
+If native `yt-dlp` or bundled macOS `mpv` download fails during install, re-run `npm install` with network access. On Linux/Windows, install `mpv` on `PATH` before playback.

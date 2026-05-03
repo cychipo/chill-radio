@@ -1,20 +1,21 @@
 import type { Command } from 'commander';
-import { playAudio } from '../services/audio-player.js';
-import { extractMediaInfo } from '../services/media-extractor.js';
+import { playMediaQueue } from '../services/media-queue-player.js';
+import { extractTikTokMedia } from '../services/media-extractor.js';
+import type { TikTokInput, TikTokInputKind } from '../types/tiktok.js';
 import { formatCliError, UserFacingError } from '../ui/errors.js';
-import { renderNowPlaying } from '../ui/now-playing.js';
+
+const allowedTikTokHosts = new Set(['tiktok.com', 'www.tiktok.com', 'vm.tiktok.com']);
 
 export function registerPlayCommand(program: Command): void {
   program
     .command('play')
-    .description('Play audio from a media URL.')
-    .argument('<url>', 'YouTube, SoundCloud, TikTok, or yt-dlp supported URL')
+    .description('Play audio from a TikTok URL.')
+    .argument('<url>', 'TikTok video, profile, or playlist URL')
     .action(async (url: string) => {
       try {
-        const parsedUrl = parseMediaUrl(url);
-        const media = await extractMediaInfo(parsedUrl);
-        console.log(renderNowPlaying(media));
-        await playAudio(media);
+        const tiktokInput = parseTikTokInput(url);
+        const mediaItems = await extractTikTokMedia(tiktokInput);
+        await playMediaQueue(mediaItems);
       } catch (error) {
         console.error(formatCliError(error));
         process.exitCode = error instanceof UserFacingError ? error.exitCode : 1;
@@ -22,7 +23,7 @@ export function registerPlayCommand(program: Command): void {
     });
 }
 
-export function parseMediaUrl(value: string): string {
+export function parseTikTokInput(value: string): TikTokInput {
   try {
     const url = new URL(value);
 
@@ -30,12 +31,35 @@ export function parseMediaUrl(value: string): string {
       throw new UserFacingError('URL must start with http:// or https://.');
     }
 
-    return url.toString();
+    if (!allowedTikTokHosts.has(url.hostname.toLowerCase())) {
+      throw new UserFacingError('TikTok is currently the only supported platform.');
+    }
+
+    return {
+      url: url.toString(),
+      kind: classifyTikTokPath(url.pathname),
+    };
   } catch (error) {
     if (error instanceof UserFacingError) {
       throw error;
     }
 
-    throw new UserFacingError('Please provide a valid media URL.');
+    throw new UserFacingError('Please provide a valid TikTok URL.');
   }
 }
+
+export function classifyTikTokPath(pathname: string): TikTokInputKind {
+  const normalizedPath = pathname.toLowerCase();
+
+  if (normalizedPath.includes('/playlist/') || normalizedPath.includes('/collection/')) {
+    return 'playlist';
+  }
+
+  if (normalizedPath.includes('/video/')) {
+    return 'video';
+  }
+
+  return 'profile';
+}
+
+export const parseMediaUrl = parseTikTokInput;

@@ -5,15 +5,16 @@ import { UserFacingError } from '../ui/errors.js';
 
 export async function playAudio(media: MediaInfo): Promise<void> {
   const mpvPath = await resolveBinaryPath('mpv');
+  const ytDlpPath = await resolveBinaryPath('yt-dlp');
 
   await new Promise<void>((resolve, reject) => {
-    const player = spawn(mpvPath, ['--no-video', '--really-quiet', media.streamUrl], {
+    const player = spawn(mpvPath, buildMpvArgs(media, ytDlpPath), {
       stdio: 'inherit',
       shell: false,
     });
 
     player.once('error', (error) => {
-      reject(new UserFacingError(`Could not start mpv. Install mpv or run postinstall again. ${error.message}`));
+      reject(new UserFacingError(`Could not start mpv. Run npm install again to download bundled mpv, or install mpv on PATH. ${error.message}`));
     });
 
     player.once('exit', (code, signal) => {
@@ -30,4 +31,8 @@ export async function playAudio(media: MediaInfo): Promise<void> {
       reject(new UserFacingError(`Playback failed with exit code ${code ?? 'unknown'}.`));
     });
   });
+}
+
+export function buildMpvArgs(media: MediaInfo, ytDlpPath: string): string[] {
+  return ['--no-video', '--really-quiet', `--script-opts=ytdl_hook-ytdl_path=${ytDlpPath}`, media.webpageUrl];
 }

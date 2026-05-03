@@ -23,11 +23,12 @@ Status: partial
 
 ## Phase 4: Playback MVP
 
-Status: complete for code path
+Status: complete for TikTok-first code path
 
-- URL validation.
-- `yt-dlp` metadata and stream extraction.
-- Now-playing output.
+- TikTok URL validation and video/profile/playlist classification.
+- `yt-dlp` metadata and stream queue extraction.
+- Sequential playback for extracted TikTok queues.
+- Now-playing output before each item.
 - `mpv` playback process.
 
 ## Phase 5: Tests and docs
@@ -39,7 +40,8 @@ Status: complete
 
 ## Future phases
 
-- Playlist playback.
+- YouTube playback.
+- SoundCloud playback.
 - Progress bar.
 - Keyboard controls.
 - Verified bundled binary download flow.

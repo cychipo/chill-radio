@@ -27,9 +27,27 @@ export function getBundledBinaryPath(name: BinaryName): string {
       'bin',
       name,
       `${platformInfo.platform}-${platformInfo.arch}`,
-      `${name}${platformInfo.executableExtension}`,
+      getBinaryFilename(name),
     ),
   );
+}
+
+function getBinaryFilename(name: BinaryName): string {
+  const platformInfo = getPlatformInfo();
+
+  if (name === 'yt-dlp') {
+    if (platformInfo.platform === 'darwin') {
+      return 'yt-dlp_macos';
+    }
+
+    if (platformInfo.platform === 'linux') {
+      return platformInfo.arch === 'arm64' ? 'yt-dlp_linux_aarch64' : 'yt-dlp_linux';
+    }
+
+    return platformInfo.arch === 'arm64' ? 'yt-dlp_arm64.exe' : 'yt-dlp.exe';
+  }
+
+  return `${name}${platformInfo.executableExtension}`;
 }
 
 function getPackageRoot(): string {

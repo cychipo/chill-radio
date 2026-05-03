@@ -5,11 +5,13 @@
 ## Runtime flow
 
 ```text
-CLI play URL
-  -> validate URL
-  -> extract metadata and audio stream with yt-dlp
-  -> render now-playing text
-  -> spawn mpv with the extracted audio URL
+CLI play TikTok URL
+  -> validate TikTok URL
+  -> classify video/profile/playlist input
+  -> extract one or more media items with yt-dlp
+  -> for each media item
+     -> render now-playing text
+     -> spawn mpv with the extracted audio URL
 ```
 
 ## Modules
@@ -19,6 +21,7 @@ src/
 ├── cli.ts
 ├── commands/play.ts
 ├── services/media-extractor.ts
+├── services/media-queue-player.ts
 ├── services/audio-player.ts
 ├── platform/binary-paths.ts
 ├── platform/platform-info.ts
@@ -29,12 +32,13 @@ src/
 
 ## Boundaries
 
-- `commands/play.ts` validates CLI input and maps user-facing failures to exit codes.
-- `services/media-extractor.ts` calls `youtube-dl-exec` with safe options and normalizes metadata.
+- `commands/play.ts` validates TikTok CLI input, classifies video/profile/playlist URLs, and maps user-facing failures to exit codes.
+- `services/media-extractor.ts` calls `youtube-dl-exec` with safe options and normalizes TikTok results into a media queue.
+- `services/media-queue-player.ts` renders and plays extracted media items sequentially.
 - `services/audio-player.ts` starts `mpv` through `child_process.spawn` with argument arrays.
 - `platform/binary-paths.ts` checks bundled binaries first and falls back to `PATH`.
 - `ui/` contains formatting only.
 
 ## Current installation strategy
 
-The package includes postinstall platform detection and runtime binary resolution. Bundled `mpv` downloading is intentionally deferred until release sources, licenses, archive layouts, and checksums are verified. Until then, runtime uses package-local binaries when present or `mpv` on `PATH`.
+The package includes postinstall platform detection and runtime binary resolution. `postinstall` downloads native `yt-dlp` for supported platforms and bundled official `mpv-player/mpv` archives for macOS x64/arm64. Linux and Windows currently use the same runtime resolver but rely on `mpv` being available on `PATH` unless a package-local binary is provided.

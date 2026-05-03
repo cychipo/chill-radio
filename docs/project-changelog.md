@@ -9,3 +9,9 @@
 - Added platform and package-local binary path resolution.
 - Added deterministic tests for URL parsing, metadata normalization, binary paths, and now-playing output.
 - Added install, development, usage, architecture, code standards, roadmap, and changelog docs.
+- Restricted MVP playback to TikTok URLs first.
+- Added TikTok video/profile/playlist URL classification.
+- Added TikTok extraction queues and sequential queue playback.
+- Added native `yt-dlp` postinstall download to avoid Python 3.10+ runtime failures.
+- Added bundled macOS `mpv` postinstall download for zero-config playback on macOS.
+- Fixed TikTok playback exit code 2 by letting `mpv` use the native `yt-dlp` hook with the original page URL instead of a direct CDN URL.
