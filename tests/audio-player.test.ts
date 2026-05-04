@@ -15,6 +15,7 @@ describe('buildMpvHookArgs', () => {
     ).toEqual([
       '--no-video',
       '--really-quiet',
+      '--ytdl-format=bestaudio/best',
       '--script-opts=ytdl_hook-ytdl_path=/tmp/yt-dlp',
       'https://www.tiktok.com/@creator/video/1',
     ]);

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { registerPlayCommand } from './commands/play.js';
+import { registerStartCommand } from './commands/start.js';
 
 export function createCliProgram(): Command {
   const program = new Command();
@@ -11,6 +12,7 @@ export function createCliProgram(): Command {
     .version('0.1.0');
 
   registerPlayCommand(program);
+  registerStartCommand(program);
 
   return program;
 }

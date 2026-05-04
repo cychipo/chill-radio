@@ -1,6 +1,23 @@
 # User Guide
 
-## Play TikTok audio
+## Interactive TikTok player
+
+```bash
+chill-radio start
+```
+
+Use this mode when you want a terminal player screen. Paste a TikTok video, profile/channel, or playlist/collection URL when prompted.
+
+Controls:
+
+- Space: pause/resume.
+- `n` or right arrow: next item.
+- `p` or left arrow: previous item or restart current item.
+- `q` or Ctrl+C: stop and exit.
+
+The screen shows title, uploader, queue position, elapsed time, remaining time, total duration, and a progress bar.
+
+## Play TikTok audio once
 
 ```bash
 chill-radio play <tiktok-url>
@@ -25,7 +42,7 @@ The command extracts lightweight audio streams, prints title/uploader/duration w
 ## Current limits
 
 - TikTok only; YouTube and SoundCloud are future work.
-- No progress bar or keyboard controls yet.
+- Interactive progress and keyboard controls are available in `chill-radio start`; `play` remains one-shot output.
 - No cookies/authenticated TikTok flow yet.
 - TikTok profile/playlist extraction depends on what `yt-dlp` returns.
 

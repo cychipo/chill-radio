@@ -27,6 +27,7 @@ export function buildMpvHookArgs(media: MediaInfo, ytDlpPath: string): string[] 
   return [
     '--no-video',
     ...(isTimingEnabled() ? [] : ['--really-quiet']),
+    '--ytdl-format=bestaudio/best',
     `--script-opts=ytdl_hook-ytdl_path=${ytDlpPath}`,
     media.webpageUrl,
   ];

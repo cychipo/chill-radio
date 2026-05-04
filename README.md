@@ -26,7 +26,10 @@ Các tính năng như playlist, thanh tiến trình và điều khiển bằng p
 
 ```bash
 chill-radio play <tiktok-url>
+chill-radio start
 ```
+
+`play` là lệnh một lần cho script/dev smoke test. `start` mở giao diện terminal tương tác để dán TikTok URL, xem tiến trình và dùng phím Space/next/prev/quit.
 
 Luồng xử lý hiện tại:
 
@@ -35,8 +38,9 @@ Luồng xử lý hiện tại:
 3. Với video URL: đưa URL gốc trực tiếp cho `mpv` + native `yt-dlp` hook để bắt đầu phát nhanh hơn.
 4. Với profile/kênh hoặc playlist/collection: dùng `yt-dlp` để trích xuất queue rồi phát tuần tự các video.
 5. Hiển thị tên bài, kênh/uploader, thời lượng nếu có trước mỗi video; riêng video fast path hiển thị tối giản trước khi phát.
-6. Phát audio bằng `mpv` chạy nền.
-7. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
+6. Trong `start`, render elapsed/remaining time, queue position, progress bar và phím điều khiển `[Space]`, `[N/→]`, `[P/←]`, `[Q]`.
+7. Phát audio bằng `mpv` chạy nền.
+8. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
 
 ### Sau MVP
 
@@ -106,6 +110,7 @@ Dùng `tsx` để chạy trực tiếp source TypeScript:
 ```bash
 npm run dev -- --help
 npm run dev -- play <tiktok-url>
+npm run dev -- start
 ```
 
 Ví dụ test lỗi input nhanh:

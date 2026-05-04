@@ -1,5 +1,13 @@
 # Project Changelog
 
+## 2026-05-04
+
+- Added `chill-radio start` interactive TikTok terminal player mode.
+- Added controllable `mpv` JSON IPC playback sessions for pause/resume/progress/stop.
+- Added terminal player rendering with elapsed time, remaining time, progress bar, queue position, and key hints.
+- Added interactive queue controller for next/previous navigation and track switching.
+- Added deterministic tests for time formatting, player screen rendering, IPC args/commands, and interactive queue control.
+
 ## 2026-05-03
 
 - Bootstrapped `chill-radio` as a Node.js 18+ TypeScript CLI package.
