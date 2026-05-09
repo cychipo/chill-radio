@@ -3,13 +3,24 @@
 `chill-radio` requires Node.js 18+.
 
 ```bash
-npm install -g chill-radio
+npm install -g @tgiap-dev/chill-radio
 ```
 
-Current setup downloads the native `yt-dlp` release binary into `vendor/bin/yt-dlp/<platform-arch>/` during `postinstall`, then uses `youtube-dl-exec` with that binary. This avoids depending on macOS system Python 3.9, which is too old for current `yt-dlp`.
+## Binary setup
 
-On macOS x64/arm64, `postinstall` also downloads the official `mpv-player/mpv` release archive and copies the bundled executable to `vendor/bin/mpv/<platform-arch>/mpv`. Runtime looks for `mpv` in `vendor/bin` first, then falls back to `mpv` on `PATH`.
+During `postinstall`, `chill-radio` tries to download a native `yt-dlp` release binary into `vendor/bin/yt-dlp/<platform-arch>/`. Runtime checks that bundled binary first, then falls back to `yt-dlp` on `PATH`.
 
-Supported runtime targets are macOS, Linux, and Windows on x64 or arm64. Bundled `mpv` download is currently enabled only for macOS because a verified portable Linux source has not been selected yet.
+On macOS x64/arm64, `postinstall` also downloads the official `mpv-player/mpv` release archive and copies the bundled executable to `vendor/bin/mpv/<platform-arch>/mpv`. Runtime checks bundled `mpv` first, then falls back to `mpv` on `PATH`.
 
-If native `yt-dlp` or bundled macOS `mpv` download fails during install, re-run `npm install` with network access. On Linux/Windows, install `mpv` on `PATH` before playback.
+On Linux and Windows x64/arm64, automatic `yt-dlp` setup is enabled, but bundled `mpv` download is not enabled yet. Install `mpv` with your OS package manager and make sure `mpv` is available on `PATH` before playback.
+
+If automatic setup fails, `npm install` should still complete with warnings. Re-run `npm install -g @tgiap-dev/chill-radio` with network access, or install both `yt-dlp` and `mpv` on `PATH` before playback.
+
+## Smoke check
+
+```bash
+chill-radio --help
+chill-radio play not-a-url
+```
+
+The invalid URL command should print a short user-facing error, not a raw stack trace.

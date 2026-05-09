@@ -1,22 +1,49 @@
 {
-  "name": "chill-radio",
+  "name": "@tgiap-dev/chill-radio",
   "version": "0.1.0",
-  "description": "Terminal music player powered by yt-dlp and mpv.",
+  "description": "Terminal music player for TikTok and YouTube audio powered by yt-dlp and mpv.",
+  "license": "MIT",
+  "author": "cychipo",
   "type": "module",
   "bin": {
-    "chill-radio": "./dist/cli.js"
+    "chill-radio": "./dist/src/cli.js"
   },
   "files": [
-    "dist",
-    "scripts",
-    "vendor"
+    "dist/src",
+    "scripts/postinstall.js",
+    "docs/INSTALL.md",
+    "docs/DEV.md",
+    "docs/GUIDE.md",
+    "docs/GUIDE-VI.md"
   ],
+  "keywords": [
+    "cli",
+    "terminal",
+    "music",
+    "youtube",
+    "tiktok",
+    "yt-dlp",
+    "mpv"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cychipo/chill-radio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cychipo/chill-radio/issues"
+  },
+  "homepage": "https://github.com/cychipo/chill-radio#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run tests",
     "dev": "tsx src/cli.ts",
-    "start": "node dist/cli.js",
+    "start": "node dist/src/cli.js",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm run build && npm test",
     "postinstall": "node scripts/postinstall.js"
   },
   "engines": {

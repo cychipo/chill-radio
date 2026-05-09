@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { registerPlayCommand } from './commands/play.js';
 import { registerStartCommand } from './commands/start.js';
@@ -17,6 +19,18 @@ export function createCliProgram(): Command {
   return program;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isCliEntrypoint()) {
   createCliProgram().parse(process.argv);
+}
+
+function isCliEntrypoint(): boolean {
+  if (!process.argv[1]) {
+    return false;
+  }
+
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1]);
+  } catch {
+    return false;
+  }
 }

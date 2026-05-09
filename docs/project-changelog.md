@@ -2,6 +2,10 @@
 
 ## 2026-05-09
 
+- Switched npm package name to scoped package `@tgiap-dev/chill-radio` while keeping CLI command `chill-radio`.
+- Added GitHub Actions automation to publish a patch npm release and create a GitHub Release on non-bot pushes to `main`.
+- Prepared npm public package metadata, MIT license, publish config, corrected `dist/src/cli.js` bin entrypoint, and cleaned package contents for manual publish validation.
+- Hardened install docs and postinstall warnings for native `yt-dlp`, macOS bundled `mpv`, and Linux/Windows `mpv` PATH fallback.
 - Added interactive playback mode shortcuts: `R` repeat track, `L` repeat queue, and `S` stable shuffle for TikTok/YouTube queues.
 - Added YouTube URL parsing for video, playlist, `watch` playlist, and livestream URLs.
 - Generalized media extraction so TikTok and YouTube normalize into the same playback queue.

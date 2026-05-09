@@ -1,6 +1,6 @@
 ---
 name: setup-chill-radio-codebase
-status: partially-complete
+status: scoped-complete
 priority: high
 created: 2026-05-03
 blockedBy: []
@@ -22,7 +22,7 @@ Current repo state is not yet a real `chill-radio` app. `README.md` still descri
 |---|---|---|---|
 | [Phase 01](./phase-01-package-foundation.md) | Complete | Create package foundation | `package.json`, CLI entry, npm scripts, base config |
 | [Phase 02](./phase-02-source-architecture.md) | Complete | Define runtime modules | `src/` CLI, services, platform utilities |
-| [Phase 03](./phase-03-binary-installation.md) | Partial | Prepare zero-config binary installer | platform detection + binary resolution; verified downloads pending |
+| [Phase 03](./phase-03-binary-installation.md) | Scoped for npm release | Prepare zero-config binary installer | native `yt-dlp`; macOS bundled `mpv`; Linux/Windows `mpv` PATH fallback |
 | [Phase 04](./phase-04-playback-mvp.md) | Complete | Implement first playable vertical slice | `chill-radio play <url>` using extractor + mpv |
 | [Phase 05](./phase-05-tests-and-docs.md) | Complete | Add validation and docs | tests, typecheck, project docs |
 
@@ -37,7 +37,7 @@ Current repo state is not yet a real `chill-radio` app. `README.md` still descri
 
 ## Success Criteria
 
-- Repository contains a real installable Node CLI package named `chill-radio`.
+- Repository contains a real installable Node CLI package published as `@tgiap-dev/chill-radio` with CLI command `chill-radio`.
 - `npm install`, `npm run typecheck`, and `npm test` are defined and pass.
 - `chill-radio --help` works from local package scripts.
 - Architecture supports the first three epics without premature playlist/control complexity.

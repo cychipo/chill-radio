@@ -12,7 +12,7 @@ const supportedArchitectures = new Set(['x64', 'arm64']);
 
 if (!supportedPlatforms.has(platform) || !supportedArchitectures.has(arch)) {
   console.warn(`chill-radio: automatic binary setup is not supported on ${platform}-${arch}.`);
-  console.warn('Install mpv and yt-dlp manually or add compatible binaries under vendor/bin.');
+  console.warn('chill-radio: install yt-dlp and mpv on PATH before playback.');
   process.exit(0);
 }
 
@@ -21,7 +21,7 @@ const ytDlpPath = join('vendor', 'bin', 'yt-dlp', `${platform}-${arch}`, ytDlpAs
 
 installBinaries().catch((error) => {
   console.warn(`chill-radio: automatic binary setup failed. ${error.message}`);
-  console.warn('chill-radio: install mpv and Python 3.10+ manually or run npm install again before playback.');
+  console.warn('chill-radio: re-run npm install with network access, or install yt-dlp and mpv on PATH before playback.');
 });
 
 async function installBinaries() {

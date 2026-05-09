@@ -17,7 +17,7 @@ try {
 } catch (error) {
   const message = error instanceof Error ? error.message : 'Unsupported platform.';
   console.warn(`chill-radio: automatic binary setup failed. ${message}`);
-  console.warn('Install mpv and Python 3.10+ manually or run npm install again before playback.');
+  console.warn('chill-radio: re-run npm install with network access, or install yt-dlp and mpv on PATH before playback.');
 }
 
 async function installBinaries(platformInfo: PlatformInfo): Promise<void> {

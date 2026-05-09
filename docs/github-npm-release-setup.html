@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hướng dẫn cấu hình GitHub NPM Release</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-soft: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --warning: #fbbf24;
+      --danger: #fb7185;
+      --border: #334155;
+      --code-bg: #020617;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 32rem), var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    header {
+      margin-bottom: 28px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.92), rgba(30, 41, 59, 0.82));
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    section {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(17, 24, 39, 0.82);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: #f8fafc;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    p:last-child,
+    ol:last-child,
+    ul:last-child,
+    pre:last-child {
+      margin-bottom: 0;
+    }
+
+    ol,
+    ul {
+      margin: 0 0 14px;
+      padding-left: 1.4rem;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    code {
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 7px;
+      background: var(--code-bg);
+      color: #bae6fd;
+      padding: 0.12rem 0.35rem;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 12px 0 18px;
+      padding: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 14px;
+      background: var(--code-bg);
+    }
+
+    pre code {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+      color: #dbeafe;
+      font-size: 0.95rem;
+    }
+
+    .callout {
+      margin: 16px 0;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: #dbeafe;
+    }
+
+    .warning {
+      border-left-color: var(--warning);
+      background: rgba(251, 191, 36, 0.1);
+    }
+
+    .danger {
+      border-left-color: var(--danger);
+      background: rgba(251, 113, 133, 0.1);
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.72);
+      padding: 6px 10px;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+
+    .checklist li::marker {
+      color: var(--accent);
+    }
+
+    a {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Hướng dẫn cấu hình GitHub NPM Release</h1>
+      <p class="subtitle"><code>chill-radio</code> sẽ publish một bản npm patch release mới bằng GitHub Actions mỗi khi có push không phải bot vào nhánh <code>main</code>. Hãy cấu hình GitHub và npm trước để lần release đầu không bị lỗi giữa chừng.</p>
+      <div class="badge-row">
+        <span class="badge">Trigger: push vào main</span>
+        <span class="badge">Auth: NPM_TOKEN</span>
+        <span class="badge">Version: tự tăng patch</span>
+        <span class="badge">Release: GitHub + npm</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section>
+        <h2>Workflow sẽ làm gì?</h2>
+        <ol>
+          <li>Cài dependencies bằng <code>npm ci --ignore-scripts</code>.</li>
+          <li>Chạy <code>npm run typecheck</code>.</li>
+          <li>Chạy <code>npm run build</code>.</li>
+          <li>Chạy <code>npm test</code>.</li>
+          <li>Chạy <code>npm pack --dry-run</code>.</li>
+          <li>Tăng patch version trong <code>package.json</code> và <code>package-lock.json</code>.</li>
+          <li>Publish lên npm bằng <code>NPM_TOKEN</code>.</li>
+          <li>Commit version mới, tạo tag <code>vX.Y.Z</code>, và push về <code>main</code>.</li>
+          <li>Tạo GitHub Release cho tag đó.</li>
+        </ol>
+        <div class="callout">Workflow bỏ qua <code>github-actions[bot]</code> và commit có <code>[skip ci]</code> để tránh vòng lặp release vô hạn.</div>
+      </section>
+
+      <section>
+        <h2>1. Kiểm tra quyền publish npm package</h2>
+        <p>Chạy trên máy local:</p>
+        <pre><code>npm whoami
+npm view @tgiap-dev/chill-radio name version --json</code></pre>
+        <div class="warning">Hiện tại <code>npm view @tgiap-dev/chill-radio name version --json</code> có thể trả npm 404 trước lần publish đầu. Hãy xác nhận npm account của bạn sở hữu hoặc publish được trong scope <code>@tgiap-dev</code> trước khi bật workflow.</div>
+        <p>Nếu npm chặn scope này, hãy đổi package scope trước khi push automation vào <code>main</code>.</p>
+      </section>
+
+      <section>
+        <h2>2. Tạo npm automation token</h2>
+        <ol>
+          <li>Mở npm account settings.</li>
+          <li>Vào phần access tokens.</li>
+          <li>Tạo automation token hoặc token có quyền publish.</li>
+          <li>Copy token ngay lúc tạo.</li>
+        </ol>
+        <div class="danger">Không commit token này. Không đặt token vào <code>.npmrc</code> trong repo.</div>
+      </section>
+
+      <section>
+        <h2>3. Thêm GitHub secret</h2>
+        <ol>
+          <li>Vào GitHub repo → <code>Settings</code> → <code>Secrets and variables</code> → <code>Actions</code>.</li>
+          <li>Thêm repository secret:</li>
+        </ol>
+        <pre><code>NPM_TOKEN=&lt;your npm token&gt;</code></pre>
+        <p>Workflow sẽ đọc secret này như sau:</p>
+        <pre><code>NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}</code></pre>
+      </section>
+
+      <section>
+        <h2>4. Bật quyền ghi cho GitHub Actions</h2>
+        <ol>
+          <li>Vào GitHub repo → <code>Settings</code> → <code>Actions</code> → <code>General</code>.</li>
+          <li>Trong mục workflow permissions, chọn read and write permissions.</li>
+          <li>Lưu lại.</li>
+        </ol>
+        <p>Workflow cần quyền này để push commit tăng version và git tag sau khi npm publish thành công.</p>
+      </section>
+
+      <section>
+        <h2>5. Kiểm tra branch protection</h2>
+        <p>Nếu nhánh <code>main</code> có branch protection, hãy đảm bảo <code>github-actions[bot]</code> được phép push release commit và tag.</p>
+        <p>Workflow sẽ chạy:</p>
+        <pre><code>git push origin HEAD:main --follow-tags</code></pre>
+        <div class="warning">Nếu branch protection chặn lệnh push này, npm có thể đã publish nhưng GitHub chưa có version commit/tag. Khi đó cần recover version commit/tag trước khi push release tiếp theo.</div>
+      </section>
+
+      <section>
+        <h2>6. Validate local trước lần push đầu</h2>
+        <pre><code>npm run typecheck
+npm run build
+npm test
+npm pack --dry-run</code></pre>
+        <p>Smoke test package local nếu muốn:</p>
+        <pre><code>npm pack
+npm install --prefix /tmp/chill-radio-smoke --ignore-scripts -g ./tgiap-dev-chill-radio-0.1.0.tgz
+/tmp/chill-radio-smoke/bin/chill-radio --help
+/tmp/chill-radio-smoke/bin/chill-radio play not-a-url</code></pre>
+        <p>Lệnh invalid URL phải in lỗi ngắn gọn cho user và exit non-zero.</p>
+      </section>
+
+      <section>
+        <h2>7. Checklist trước khi push lần đầu</h2>
+        <ul class="checklist">
+          <li><code>NPM_TOKEN</code> đã tồn tại trong GitHub Actions secrets.</li>
+          <li>GitHub Actions đã có quyền read/write.</li>
+          <li>Branch protection cho phép bot push release.</li>
+          <li>Npm account publish được package <code>@tgiap-dev/chill-radio</code>.</li>
+          <li><code>npm pack --dry-run</code> không chứa <code>tests</code>, <code>plans</code>, <code>.claude</code>, <code>vendor</code>, <code>.env</code>, và tarball cũ.</li>
+          <li>Bạn chấp nhận rủi ro của bản release đầu: postinstall tải GitHub latest binaries chưa pin checksum.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8. Kiểm tra sau khi workflow chạy</h2>
+        <pre><code>npm view @tgiap-dev/chill-radio version
+npm install -g @tgiap-dev/chill-radio
+chill-radio --help</code></pre>
+        <p>Kiểm tra thêm trên GitHub:</p>
+        <ul>
+          <li><code>package.json</code> trên <code>main</code> đã được tăng version.</li>
+          <li>Tag <code>vX.Y.Z</code> đã tồn tại.</li>
+          <li>GitHub Release <code>vX.Y.Z</code> đã tồn tại.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Ghi chú recovery</h2>
+        <p>Nếu npm publish fail, workflow sẽ dừng trước khi push version commit/tag. Hãy sửa lỗi rồi push một thay đổi mới để retry.</p>
+        <p>Nếu npm publish thành công nhưng git push hoặc tạo GitHub Release fail:</p>
+        <ol>
+          <li>Kiểm tra các version đã publish:</li>
+        </ol>
+        <pre><code>npm view @tgiap-dev/chill-radio versions --json</code></pre>
+        <ol start="2">
+          <li>Commit/tag thủ công version đã publish, hoặc tạo GitHub Release còn thiếu.</li>
+          <li>Không bump tiếp nếu bạn không cố ý tạo patch version mới.</li>
+        </ol>
+        <p>Nếu publish nhầm một version lỗi, ưu tiên dùng:</p>
+        <pre><code>npm deprecate @tgiap-dev/chill-radio@&lt;version&gt; "reason"</code></pre>
+        <p>Sau đó publish patch version đã fix. Chỉ dùng <code>npm unpublish @tgiap-dev/chill-radio@&lt;version&gt;</code> nếu npm policy cho phép và an toàn cho user.</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

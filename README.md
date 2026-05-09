@@ -1,6 +1,6 @@
 # chill-radio
 
-`chill-radio` là CLI phát nhạc ngay trong terminal dành cho lập trình viên. MVP hiện bắt đầu với TikTok: phát link video, link kênh/user profile, và link playlist/collection khi `yt-dlp` hỗ trợ. Mục tiêu dài hạn là mở rộng sang YouTube, SoundCloud và các nguồn được `yt-dlp` hỗ trợ mà không cần mở trình duyệt, không tốn nhiều RAM/CPU, và hướng tới trải nghiệm “cài là chạy”.
+`chill-radio` là CLI phát nhạc ngay trong terminal dành cho lập trình viên. Dự án hiện hỗ trợ TikTok video/profile/playlist và YouTube video/playlist/livestream public mà `yt-dlp` resolve được. Mục tiêu dài hạn là mở rộng sang SoundCloud và các nguồn được `yt-dlp` hỗ trợ mà không cần mở trình duyệt, không tốn nhiều RAM/CPU, và hướng tới trải nghiệm “cài là chạy”.
 
 ## Mục tiêu sản phẩm
 
@@ -72,15 +72,24 @@ src/
     └── media.ts
 ```
 
-## Cài đặt và phát triển
+## Cài đặt
+
+```bash
+npm install -g @tgiap-dev/chill-radio
+chill-radio --help
+chill-radio play <url>
+chill-radio start
+```
+
+`postinstall` tải native `yt-dlp` vào `vendor/bin/yt-dlp/<platform-arch>/` khi có thể. Trên macOS x64/arm64, `postinstall` cũng tải bundled `mpv`. Trên Linux/Windows, hãy cài `mpv` trên `PATH`; nếu automatic setup thất bại, cài `yt-dlp` và `mpv` trên `PATH` rồi chạy lại.
+
+## Phát triển
 
 ### 1. Cài dependency
 
 ```bash
 npm install
 ```
-
-`postinstall` hiện tải native `yt-dlp` binary vào `vendor/bin/yt-dlp/<platform-arch>/` để tránh phụ thuộc Python hệ thống quá cũ. Trên macOS, `postinstall` cũng tải bundled `mpv` vào `vendor/bin/mpv/<platform-arch>/`. Runtime sẽ tìm `mpv` trong `vendor/bin` trước, sau đó fallback sang `mpv` trên `PATH`.
 
 ### 2. Chạy kiểm tra code
 
@@ -148,19 +157,22 @@ Sau khi `npm run build`, có thể chạy CLI build bằng Node:
 
 ```bash
 node dist/src/cli.js --help
-node dist/src/cli.js play <tiktok-url>
+node dist/src/cli.js play <url>
 ```
 
 Nếu dùng npm package local để giả lập cài đặt global:
 
 ```bash
+npm pack --dry-run
 npm pack
-npm install -g ./chill-radio-0.1.0.tgz
-chill-radio --help
-chill-radio play <tiktok-url>
+npm install --prefix /tmp/chill-radio-smoke --ignore-scripts -g ./tgiap-dev-chill-radio-0.1.0.tgz
+/tmp/chill-radio-smoke/bin/chill-radio --help
+/tmp/chill-radio-smoke/bin/chill-radio play not-a-url
 ```
 
-### 6. Checklist trước khi đẩy product
+Lệnh invalid URL phải trả lỗi ngắn gọn và exit non-zero. Bỏ `--ignore-scripts` khi muốn smoke test cả binary setup thật.
+
+### 6. Checklist trước khi publish npm
 
 - `npm install` chạy thành công trên môi trường sạch.
 - `npm run typecheck` pass.
@@ -168,11 +180,14 @@ chill-radio play <tiktok-url>
 - `npm test` pass.
 - `npm run dev -- --help` hiển thị đúng command.
 - `npm run dev -- play not-a-url` trả lỗi dễ hiểu.
+- `npm pack --dry-run` không chứa `tests`, `plans`, `.claude`, `vendor`, `.env`, cache, hoặc tarball cũ.
+- Local tarball install smoke chạy được `chill-radio --help` và invalid URL.
+- Kiểm tra `npm whoami` và xác minh package name trước khi publish.
 - Test thủ công ít nhất một URL public phát được với `mpv`.
-- Không commit `node_modules`, `dist`, `vendor/bin`, token, API key, hoặc file `.env`.
+- Không commit `node_modules`, `dist`, `vendor/bin`, token, API key, `.npmrc`, hoặc file `.env`.
 - Kiểm tra lại `npm audit`; không dùng `npm audit fix --force` nếu chưa đánh giá breaking changes.
 
-Luồng tự tải `mpv` portable vẫn đang chờ xác minh nguồn phát hành, license, archive layout và checksum trước khi publish.
+Luồng bundled `mpv` hiện chỉ bật cho macOS; Linux/Windows dùng `mpv` trên `PATH` cho đến khi có nguồn portable được xác minh.
 
 ## Tài liệu liên quan
 
@@ -188,4 +203,4 @@ Luồng tự tải `mpv` portable vẫn đang chờ xác minh nguồn phát hàn
 
 ## License
 
-Chưa xác định.
+MIT.

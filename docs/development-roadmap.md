@@ -16,10 +16,12 @@ Status: complete
 
 ## Phase 3: Binary installation
 
-Status: partial
+Status: scoped for first npm release
 
 - Platform detection and runtime binary resolution exist.
-- Automatic `mpv` download remains pending until source and checksum policy are finalized.
+- Native `yt-dlp` postinstall setup is enabled for supported macOS/Linux/Windows x64/arm64 targets.
+- Bundled `mpv` postinstall setup is enabled for macOS x64/arm64.
+- Linux/Windows `mpv` remains a documented PATH fallback until a portable source/checksum policy is finalized.
 
 ## Phase 4: Playback MVP
 
@@ -39,6 +41,16 @@ Status: complete
 
 - Deterministic unit tests.
 - Install, development, user guide, architecture, and standards docs.
+
+## Phase 6: NPM public release readiness
+
+Status: ready for first automated publish setup
+
+- MIT license and public npm package metadata are configured.
+- `bin` points to the verified build output at `dist/src/cli.js`.
+- Package tarball validation excludes tests, plans, `.claude`, `vendor`, and local secrets.
+- GitHub Actions can auto-bump patch versions, publish to npm, and create GitHub Releases on non-bot pushes to `main`.
+- First automated publish remains gated on `NPM_TOKEN`, npm `@tgiap-dev` scope verification, and branch protection allowing the bot release commit.
 
 ## Future phases
 
