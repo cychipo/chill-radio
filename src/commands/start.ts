@@ -57,6 +57,7 @@ export async function startInteractiveMode(): Promise<void> {
           queueIndex: 0,
           queueLength: queue.length,
           paused: false,
+          playbackMode: { repeatMode: 'off', shuffle: false },
           status: 'Starting playback...',
         }),
       );
@@ -144,6 +145,7 @@ async function runPlayerUi(controller: InteractiveQueueController): Promise<void
         elapsedSeconds: state.progress.elapsedSeconds,
         durationSeconds: state.progress.durationSeconds,
         paused: state.progress.paused,
+        playbackMode: state.playbackMode,
         errorMessage: state.errorMessage,
       }),
     );
@@ -169,6 +171,24 @@ async function runPlayerUi(controller: InteractiveQueueController): Promise<void
 
     if (key.name === 'p' || key.name === 'left') {
       await controller.previous();
+      await render();
+      return;
+    }
+
+    if (key.name === 'r') {
+      controller.toggleRepeatTrack();
+      await render();
+      return;
+    }
+
+    if (key.name === 'l') {
+      controller.toggleRepeatQueue();
+      await render();
+      return;
+    }
+
+    if (key.name === 's') {
+      controller.toggleShuffle();
       await render();
     }
   };

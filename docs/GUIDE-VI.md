@@ -21,8 +21,11 @@ Phím điều khiển:
 - `n` hoặc mũi tên phải: bài tiếp theo.
 - `p` hoặc mũi tên trái: bài trước hoặc phát lại bài hiện tại.
 - `q` hoặc Ctrl+C: dừng và thoát.
+- `r`: bật/tắt lặp lại bài hiện tại.
+- `l`: bật/tắt lặp lại queue/playlist.
+- `s`: bật/tắt shuffle theo thứ tự ngẫu nhiên ổn định.
 
-Màn hình hiển thị tên bài, uploader, vị trí queue, thời gian đã nghe, thời gian còn lại, tổng thời lượng nếu có và progress bar. Livestream có thể chỉ hiển thị thời gian đã nghe vì không có tổng thời lượng cố định.
+Màn hình hiển thị tên bài, uploader, vị trí queue, playback mode, thời gian đã nghe, thời gian còn lại, tổng thời lượng nếu có và progress bar. Livestream có thể chỉ hiển thị thời gian đã nghe vì không có tổng thời lượng cố định.
 
 ## Phát audio một lần
 

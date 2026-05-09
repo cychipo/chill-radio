@@ -29,6 +29,7 @@ Status: complete for TikTok and YouTube code paths
 - YouTube URL validation and video/playlist/livestream classification.
 - `yt-dlp` metadata and stream queue extraction.
 - Sequential playback for extracted TikTok/YouTube queues.
+- Repeat track, repeat queue, and shuffle controls in interactive playback.
 - Now-playing output before each item.
 - `mpv` playback process.
 

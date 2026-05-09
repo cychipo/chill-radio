@@ -2,6 +2,7 @@
 
 ## 2026-05-09
 
+- Added interactive playback mode shortcuts: `R` repeat track, `L` repeat queue, and `S` stable shuffle for TikTok/YouTube queues.
 - Added YouTube URL parsing for video, playlist, `watch` playlist, and livestream URLs.
 - Generalized media extraction so TikTok and YouTube normalize into the same playback queue.
 - Updated `chill-radio play <url>` and `chill-radio start` to accept supported YouTube URLs.

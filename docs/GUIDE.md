@@ -21,8 +21,11 @@ Controls:
 - `n` or right arrow: next item.
 - `p` or left arrow: previous item or restart current item.
 - `q` or Ctrl+C: stop and exit.
+- `r`: toggle repeat current track.
+- `l`: toggle repeat queue/playlist.
+- `s`: toggle stable shuffle order.
 
-The screen shows title, uploader, queue position, elapsed time, remaining time, total duration when available, and a progress bar. Livestreams may show elapsed time without a fixed total duration.
+The screen shows title, uploader, queue position, playback mode, elapsed time, remaining time, total duration when available, and a progress bar. Livestreams may show elapsed time without a fixed total duration.
 
 ## Play audio once
 

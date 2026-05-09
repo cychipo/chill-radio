@@ -66,7 +66,10 @@ describe('renderPlayerScreen', () => {
     expect(output).toContain('0:30 elapsed   1:00 left   1:30 total');
     expect(output).toContain('Now Playing');
     expect(output).toContain('Progress');
+    expect(output).toContain('Mode');
     expect(output).toContain('Space');
+    expect(output).toContain('repeat track');
+    expect(output).toContain('shuffle');
     expect(output).toContain('Playback Error');
     expect(output).toContain('HTTP error 403 Forbidden');
   });

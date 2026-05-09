@@ -41,6 +41,9 @@ Checklist:
 - `n` or right arrow moves to the next queue item when available.
 - `p` or left arrow restarts or moves to the previous item.
 - `q` or Ctrl+C exits and restores the terminal.
+- `r` toggles repeat current track.
+- `l` toggles repeat queue/playlist.
+- `s` toggles stable shuffle order.
 
 For playback startup diagnostics, enable timing logs:
 

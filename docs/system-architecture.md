@@ -18,7 +18,7 @@ CLI start
   -> validate and extract media queue
   -> spawn mpv with JSON IPC enabled
   -> render progress and controls
-  -> send pause/next/previous/quit actions through queue controller and mpv IPC
+  -> send pause/next/previous/repeat/shuffle/quit actions through queue controller and mpv IPC
 ```
 
 ## Modules

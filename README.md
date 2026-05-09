@@ -32,7 +32,7 @@ Luồng xử lý hiện tại:
 3. Với TikTok video URL: giữ fast path đưa URL gốc trực tiếp cho `mpv` + native `yt-dlp` hook để bắt đầu phát nhanh hơn.
 4. Với TikTok profile/playlist và YouTube video/playlist/livestream: dùng `yt-dlp` để trích xuất queue rồi phát tuần tự media resolve được.
 5. Hiển thị tên bài, kênh/uploader, thời lượng nếu có trước mỗi item; livestream có thể không có tổng thời lượng.
-6. Trong `start`, render elapsed/remaining time, queue position, progress bar và phím điều khiển `[Space]`, `[N/→]`, `[P/←]`, `[Q]`.
+6. Trong `start`, render elapsed/remaining time, queue position, playback mode, progress bar và phím điều khiển `[Space]`, `[N/→]`, `[P/←]`, `[R]`, `[L]`, `[S]`, `[Q]`.
 7. Phát audio bằng `mpv` chạy nền.
 8. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
 

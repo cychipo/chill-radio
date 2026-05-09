@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import type { MediaInfo } from '../types/media.js';
+import type { PlaybackModeState } from '../services/interactive-queue-controller.js';
 import { formatDuration, formatRemaining } from './time-format.js';
 
 export type PlayerScreenState = {
@@ -9,6 +10,7 @@ export type PlayerScreenState = {
   elapsedSeconds?: number;
   durationSeconds?: number;
   paused: boolean;
+  playbackMode?: PlaybackModeState;
   status?: string;
   errorMessage?: string;
 };
@@ -70,6 +72,7 @@ export function renderPlayerScreen(state: PlayerScreenState): string {
       `Title  ${chalk.white.bold(title)}`,
       `Artist ${chalk.gray(uploader)}`,
       `Queue  ${state.queueIndex + 1}/${state.queueLength}    Status ${state.paused ? chalk.yellow(status) : chalk.green(status)}`,
+      `Mode   ${formatPlaybackMode(state.playbackMode)}`,
     ]),
     renderBox('Progress', [
       `${chalk.cyan(renderProgressBar(elapsed, duration, 34))}`,
@@ -81,6 +84,7 @@ export function renderPlayerScreen(state: PlayerScreenState): string {
     renderBox('Controls', [
       `${keyLabel('Space')} pause/resume   ${keyLabel('N/→')} next`,
       `${keyLabel('P/←')} previous         ${keyLabel('Q')} quit`,
+      `${keyLabel('R')} repeat track       ${keyLabel('L')} repeat queue   ${keyLabel('S')} shuffle`,
     ]),
   ].join('\n');
 }
@@ -122,6 +126,15 @@ function renderBox(title: string, lines: string[]): string {
     .map((line) => `${chalk.cyan('│')} ${padVisible(line, innerWidth)} ${chalk.cyan('│')}`);
   const bottom = `${chalk.cyan('╰')}${chalk.cyan('─'.repeat(screenWidth - 2))}${chalk.cyan('╯')}`;
   return [top, ...body, bottom].join('\n');
+}
+
+function formatPlaybackMode(mode: PlaybackModeState | undefined): string {
+  if (!mode) {
+    return 'Normal';
+  }
+
+  const repeat = mode.repeatMode === 'track' ? 'Repeat track' : mode.repeatMode === 'queue' ? 'Repeat queue' : 'Repeat off';
+  return `${repeat}${mode.shuffle ? ' + Shuffle' : ''}`;
 }
 
 function keyLabel(value: string): string {
