@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { renderLoadingBar, renderLoadingScreen, renderPlayerScreen, renderProgressBar, sanitizeTerminalText } from '../src/ui/player-screen.js';
+import {
+  renderLoadingBar,
+  renderLoadingScreen,
+  renderPlayerScreen,
+  renderProgressBar,
+  renderStartScreen,
+  sanitizeTerminalText,
+} from '../src/ui/player-screen.js';
 
 describe('renderProgressBar', () => {
   it('renders filled progress and unknown duration', () => {
@@ -23,6 +30,16 @@ describe('renderLoadingScreen', () => {
     expect(output).toContain('Resolving media stream');
     expect(output).toContain('0:12 elapsed');
     expect(output).toContain('Please Wait');
+  });
+});
+
+describe('renderStartScreen', () => {
+  it('wraps supported platform text instead of truncating it', () => {
+    const output = renderStartScreen();
+
+    expect(output).toContain('YouTube');
+    expect(output).toContain('videos/playlists/livestreams');
+    expect(output).not.toContain('…');
   });
 });
 

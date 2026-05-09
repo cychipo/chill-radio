@@ -1,5 +1,12 @@
 # Project Changelog
 
+## 2026-05-09
+
+- Added YouTube URL parsing for video, playlist, `watch` playlist, and livestream URLs.
+- Generalized media extraction so TikTok and YouTube normalize into the same playback queue.
+- Updated `chill-radio play <url>` and `chill-radio start` to accept supported YouTube URLs.
+- Updated terminal player copy, user guides, architecture docs, roadmap, and tests for TikTok + YouTube support.
+
 ## 2026-05-04
 
 - Added `chill-radio start` interactive TikTok terminal player mode.

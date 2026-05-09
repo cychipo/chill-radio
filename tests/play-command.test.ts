@@ -1,48 +1,87 @@
 import { describe, expect, it } from 'vitest';
-import { classifyTikTokPath, createFastTikTokVideoMedia, parseTikTokInput } from '../src/commands/play.js';
+import {
+  classifyTikTokPath,
+  classifyYouTubeUrl,
+  createFastTikTokVideoMedia,
+  parseMediaInput,
+} from '../src/commands/play.js';
 import { UserFacingError } from '../src/ui/errors.js';
 
-describe('parseTikTokInput', () => {
+describe('parseMediaInput', () => {
   it('accepts TikTok video URLs', () => {
-    expect(parseTikTokInput('https://www.tiktok.com/@radio/video/123')).toEqual({
+    expect(parseMediaInput('https://www.tiktok.com/@radio/video/123')).toEqual({
       url: 'https://www.tiktok.com/@radio/video/123',
+      platform: 'tiktok',
       kind: 'video',
     });
   });
 
   it('accepts TikTok profile URLs', () => {
-    expect(parseTikTokInput('https://www.tiktok.com/@radio')).toEqual({
+    expect(parseMediaInput('https://www.tiktok.com/@radio')).toEqual({
       url: 'https://www.tiktok.com/@radio',
+      platform: 'tiktok',
       kind: 'profile',
     });
   });
 
   it('accepts TikTok playlist URLs', () => {
-    expect(parseTikTokInput('https://www.tiktok.com/@radio/playlist/chill-123')).toEqual({
+    expect(parseMediaInput('https://www.tiktok.com/@radio/playlist/chill-123')).toEqual({
       url: 'https://www.tiktok.com/@radio/playlist/chill-123',
+      platform: 'tiktok',
       kind: 'playlist',
     });
   });
 
-  it('accepts short TikTok URLs', () => {
-    expect(parseTikTokInput('https://vm.tiktok.com/ZM123/')).toEqual({
-      url: 'https://vm.tiktok.com/ZM123/',
-      kind: 'profile',
+  it('accepts YouTube video URLs', () => {
+    expect(parseMediaInput('https://www.youtube.com/watch?v=abc123')).toEqual({
+      url: 'https://www.youtube.com/watch?v=abc123',
+      platform: 'youtube',
+      kind: 'video',
+    });
+  });
+
+  it('accepts short YouTube video URLs', () => {
+    expect(parseMediaInput('https://youtu.be/abc123')).toEqual({
+      url: 'https://youtu.be/abc123',
+      platform: 'youtube',
+      kind: 'video',
+    });
+  });
+
+  it('accepts YouTube playlist URLs', () => {
+    expect(parseMediaInput('https://www.youtube.com/playlist?list=PL123')).toEqual({
+      url: 'https://www.youtube.com/playlist?list=PL123',
+      platform: 'youtube',
+      kind: 'playlist',
+    });
+  });
+
+  it('treats YouTube watch URLs with a list as playlists', () => {
+    expect(parseMediaInput('https://www.youtube.com/watch?v=abc123&list=PL123')).toEqual({
+      url: 'https://www.youtube.com/watch?v=abc123&list=PL123',
+      platform: 'youtube',
+      kind: 'playlist',
+    });
+  });
+
+  it('accepts YouTube livestream URLs', () => {
+    expect(parseMediaInput('https://www.youtube.com/live/abc123')).toEqual({
+      url: 'https://www.youtube.com/live/abc123',
+      platform: 'youtube',
+      kind: 'livestream',
     });
   });
 
   it('rejects invalid URLs', () => {
-    expect(() => parseTikTokInput('not-a-url')).toThrow(UserFacingError);
+    expect(() => parseMediaInput('not-a-url')).toThrow(UserFacingError);
   });
 
   it('rejects non-http protocols', () => {
-    expect(() => parseTikTokInput('file:///tmp/audio.mp3')).toThrow('URL must start with http:// or https://.');
+    expect(() => parseMediaInput('file:///tmp/audio.mp3')).toThrow('URL must start with http:// or https://.');
   });
 
-  it('rejects non-TikTok URLs', () => {
-    expect(() => parseTikTokInput('https://youtube.com/watch?v=1')).toThrow(
-      'TikTok is currently the only supported platform.',
-    );
+  it('rejects unsupported URLs', () => {
+    expect(() => parseMediaInput('https://soundcloud.com/radio')).toThrow('Supported platforms: TikTok and YouTube.');
   });
 });
 
@@ -51,6 +90,7 @@ describe('createFastTikTokVideoMedia', () => {
     expect(
       createFastTikTokVideoMedia({
         url: 'https://www.tiktok.com/@radio/video/123',
+        platform: 'tiktok',
         kind: 'video',
       }),
     ).toEqual({
@@ -73,5 +113,21 @@ describe('classifyTikTokPath', () => {
 
   it('classifies profile paths', () => {
     expect(classifyTikTokPath('/@radio')).toBe('profile');
+  });
+});
+
+describe('classifyYouTubeUrl', () => {
+  it('classifies playlist paths and watch URLs with list params', () => {
+    expect(classifyYouTubeUrl(new URL('https://www.youtube.com/playlist?list=PL123'))).toBe('playlist');
+    expect(classifyYouTubeUrl(new URL('https://www.youtube.com/watch?v=1&list=PL123'))).toBe('playlist');
+  });
+
+  it('classifies live paths', () => {
+    expect(classifyYouTubeUrl(new URL('https://www.youtube.com/live/abc123'))).toBe('livestream');
+  });
+
+  it('classifies normal watch and short URLs as video', () => {
+    expect(classifyYouTubeUrl(new URL('https://www.youtube.com/watch?v=abc123'))).toBe('video');
+    expect(classifyYouTubeUrl(new URL('https://youtu.be/abc123'))).toBe('video');
   });
 });

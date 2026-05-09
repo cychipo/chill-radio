@@ -2,21 +2,21 @@ import type { Command } from 'commander';
 import { createInterface } from 'node:readline/promises';
 import { emitKeypressEvents } from 'node:readline';
 import { stdin as input, stdout as output } from 'node:process';
-import { extractTikTokMedia } from '../services/media-extractor.js';
+import { extractMedia } from '../services/media-extractor.js';
+import { parseMediaInput } from '../services/media-input.js';
 import { InteractiveQueueController } from '../services/interactive-queue-controller.js';
 import { createPlayerSession } from '../services/player-session.js';
 import { formatCliError, UserFacingError } from '../ui/errors.js';
 import { renderLoadingScreen, renderPlayerScreen, renderStartScreen } from '../ui/player-screen.js';
-import { parseTikTokInput } from './play.js';
 
 const refreshIntervalMs = 750;
 const loadingRefreshIntervalMs = 160;
-const loadingLabels = ['Analyzing TikTok URL', 'Resolving media stream', 'Preparing playback queue'];
+const loadingLabels = ['Analyzing media URL', 'Resolving media stream', 'Preparing playback queue'];
 
 export function registerStartCommand(program: Command): void {
   program
     .command('start')
-    .description('Open the interactive TikTok terminal player.')
+    .description('Open the interactive terminal player.')
     .action(async () => {
       try {
         await startInteractiveMode();
@@ -35,7 +35,7 @@ export async function startInteractiveMode(): Promise<void> {
   let promptMessage: string | undefined;
 
   while (true) {
-    const url = await readTikTokUrl(promptMessage);
+    const url = await readMediaUrl(promptMessage);
     promptMessage = undefined;
 
     if (!url) {
@@ -45,8 +45,8 @@ export async function startInteractiveMode(): Promise<void> {
     const loading = startLoadingScreen();
 
     try {
-      const tiktokInput = parseTikTokInput(url);
-      const queue = await extractTikTokMedia(tiktokInput);
+      const mediaInput = parseMediaInput(url);
+      const queue = await extractMedia(mediaInput);
       loading.stop();
       const controller = new InteractiveQueueController(queue, createPlayerSession);
       await controller.start();
@@ -88,14 +88,14 @@ function startLoadingScreen(): { stop: () => void } {
   };
 }
 
-async function readTikTokUrl(message?: string): Promise<string | undefined> {
+async function readMediaUrl(message?: string): Promise<string | undefined> {
   console.clear();
   console.log(renderStartScreen(message));
 
   const reader = createInterface({ input, output });
 
   try {
-    const answer = await reader.question('TikTok URL> ');
+    const answer = await reader.question('Media URL> ');
     const trimmed = answer.trim();
     return trimmed.length > 0 ? trimmed : undefined;
   } finally {

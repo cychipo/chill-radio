@@ -1,8 +1,8 @@
 import { create } from 'youtube-dl-exec';
 import { resolveBinaryPath } from '../platform/binary-paths.js';
-import type { MediaInfo } from '../types/media.js';
-import type { TikTokInput } from '../types/tiktok.js';
+import type { MediaInfo, MediaInput, MediaPlatform } from '../types/media.js';
 import { UserFacingError, toUserFacingError } from '../ui/errors.js';
+import { parseMediaInput } from './media-input.js';
 
 export type ExtractedMedia = {
   title?: unknown;
@@ -16,44 +16,44 @@ export type ExtractedMedia = {
   entries?: unknown;
 };
 
-export async function extractTikTokMedia(input: TikTokInput): Promise<MediaInfo[]> {
+export async function extractMedia(input: MediaInput): Promise<MediaInfo[]> {
   try {
     const ytDlp = create(await resolveBinaryPath('yt-dlp'));
     const result = await ytDlp(input.url, {
       dumpSingleJson: true,
       format: 'bestaudio/best',
-      noPlaylist: input.kind === 'video' ? true : undefined,
+      noPlaylist: input.kind === 'video' || input.kind === 'livestream' ? true : undefined,
       noWarnings: true,
     });
 
-    return normalizeTikTokResult(result as ExtractedMedia, input);
+    return normalizeMediaResult(result as ExtractedMedia, input);
   } catch (error) {
-    throw mapExtractorError(error);
+    throw mapExtractorError(error, input.platform);
   }
 }
 
 export async function extractMediaInfo(url: string): Promise<MediaInfo> {
-  const [media] = await extractTikTokMedia({ url, kind: 'video' });
+  const [media] = await extractMedia(parseMediaInput(url));
   return media;
 }
 
-export function normalizeTikTokResult(raw: ExtractedMedia, input: TikTokInput): MediaInfo[] {
+export function normalizeMediaResult(raw: ExtractedMedia, input: MediaInput): MediaInfo[] {
   if (Array.isArray(raw.entries)) {
     const mediaItems = raw.entries
-      .map((entry) => normalizeOptionalMediaInfo(entry as ExtractedMedia, input.url))
+      .map((entry) => normalizeOptionalMediaInfo(entry as ExtractedMedia, input.url, input.platform))
       .filter((media): media is MediaInfo => media !== undefined);
 
     if (mediaItems.length === 0) {
-      throw new UserFacingError('No playable TikTok videos found.');
+      throw new UserFacingError(`No playable ${platformLabel(input.platform)} videos found.`);
     }
 
     return mediaItems;
   }
 
-  return [normalizeMediaInfo(raw, input.url)];
+  return [normalizeMediaInfo(raw, input.url, input.platform)];
 }
 
-export function normalizeMediaInfo(raw: ExtractedMedia, fallbackUrl: string): MediaInfo {
+export function normalizeMediaInfo(raw: ExtractedMedia, fallbackUrl: string, platform: MediaPlatform = 'tiktok'): MediaInfo {
   const streamUrl = stringValue(raw.url);
 
   if (!streamUrl) {
@@ -61,7 +61,7 @@ export function normalizeMediaInfo(raw: ExtractedMedia, fallbackUrl: string): Me
   }
 
   return {
-    title: stringValue(raw.title) ?? 'Untitled TikTok video',
+    title: stringValue(raw.title) ?? `Untitled ${platformLabel(platform)} media`,
     uploader: stringValue(raw.uploader) ?? stringValue(raw.channel),
     durationSeconds: numberValue(raw.duration),
     streamUrl,
@@ -70,9 +70,9 @@ export function normalizeMediaInfo(raw: ExtractedMedia, fallbackUrl: string): Me
   };
 }
 
-function normalizeOptionalMediaInfo(raw: ExtractedMedia, fallbackUrl: string): MediaInfo | undefined {
+function normalizeOptionalMediaInfo(raw: ExtractedMedia, fallbackUrl: string, platform: MediaPlatform): MediaInfo | undefined {
   try {
-    return normalizeMediaInfo(raw, fallbackUrl);
+    return normalizeMediaInfo(raw, fallbackUrl, platform);
   } catch (error) {
     if (error instanceof UserFacingError) {
       return undefined;
@@ -82,7 +82,7 @@ function normalizeOptionalMediaInfo(raw: ExtractedMedia, fallbackUrl: string): M
   }
 }
 
-export function mapExtractorError(error: unknown): UserFacingError {
+export function mapExtractorError(error: unknown, platform: MediaPlatform = 'tiktok'): UserFacingError {
   const message = error instanceof Error ? error.message : String(error);
 
   if (message.includes('unsupported version of Python') || message.includes('Python versions 3.10 and above')) {
@@ -91,7 +91,11 @@ export function mapExtractorError(error: unknown): UserFacingError {
     );
   }
 
-  return toUserFacingError(error, 'Could not extract TikTok audio stream');
+  return toUserFacingError(error, `Could not extract ${platformLabel(platform)} audio stream`);
+}
+
+function platformLabel(platform: MediaPlatform): string {
+  return platform === 'youtube' ? 'YouTube' : 'TikTok';
 }
 
 function stringValue(value: unknown): string | undefined {

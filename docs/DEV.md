@@ -13,16 +13,19 @@ npm install
 npm run typecheck
 npm run build
 npm test
-npm run dev -- play <tiktok-url>
+npm run dev -- play <url>
 npm run dev -- start
 ```
 
-Tests avoid live TikTok by default. Manual playback testing should use public TikTok URLs you are allowed to access and stream:
+Tests avoid live TikTok/YouTube by default. Manual playback testing should use public URLs you are allowed to access and stream:
 
 ```bash
 npm run dev -- play "https://www.tiktok.com/@creator/video/123"
 npm run dev -- play "https://www.tiktok.com/@creator"
 npm run dev -- play "https://www.tiktok.com/@creator/playlist/name-123"
+npm run dev -- play "https://www.youtube.com/watch?v=abc123"
+npm run dev -- play "https://www.youtube.com/playlist?list=PL123"
+npm run dev -- play "https://www.youtube.com/live/abc123"
 ```
 
 Manual interactive UI smoke test:
@@ -33,7 +36,7 @@ npm run dev -- start
 
 Checklist:
 
-- Paste a public TikTok URL and confirm playback starts.
+- Paste public TikTok and YouTube URLs and confirm playback starts.
 - Space toggles pause/resume.
 - `n` or right arrow moves to the next queue item when available.
 - `p` or left arrow restarts or moves to the previous item.
@@ -42,7 +45,7 @@ Checklist:
 For playback startup diagnostics, enable timing logs:
 
 ```bash
-CHILL_RADIO_TIMING=1 npm run dev -- play "https://www.tiktok.com/@creator/video/123"
+CHILL_RADIO_TIMING=1 npm run dev -- play "https://www.youtube.com/watch?v=abc123"
 ```
 
 ## Package layout

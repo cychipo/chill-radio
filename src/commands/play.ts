@@ -1,33 +1,31 @@
 import type { Command } from 'commander';
 import { playAudioWithDirectFallback } from '../services/audio-player.js';
 import { playMediaQueue } from '../services/media-queue-player.js';
-import { extractTikTokMedia } from '../services/media-extractor.js';
-import type { MediaInfo } from '../types/media.js';
-import type { TikTokInput, TikTokInputKind } from '../types/tiktok.js';
+import { extractMedia } from '../services/media-extractor.js';
+import { parseMediaInput } from '../services/media-input.js';
+import type { MediaInfo, MediaInput } from '../types/media.js';
 import { formatCliError, UserFacingError } from '../ui/errors.js';
 import { renderNowPlaying } from '../ui/now-playing.js';
 import { markTiming } from '../ui/timing.js';
 
-const allowedTikTokHosts = new Set(['tiktok.com', 'www.tiktok.com', 'vm.tiktok.com']);
-
 export function registerPlayCommand(program: Command): void {
   program
     .command('play')
-    .description('Play audio from a TikTok URL.')
-    .argument('<url>', 'TikTok video, profile, or playlist URL')
+    .description('Play audio from a TikTok or YouTube URL.')
+    .argument('<url>', 'TikTok or YouTube video, playlist, profile, or livestream URL')
     .action(async (url: string) => {
       try {
         markTiming('play command started');
-        const tiktokInput = parseTikTokInput(url);
-        markTiming(`TikTok URL parsed as ${tiktokInput.kind}`);
+        const mediaInput = parseMediaInput(url);
+        markTiming(`${mediaInput.platform} URL parsed as ${mediaInput.kind}`);
 
-        if (tiktokInput.kind === 'video') {
-          await playTikTokVideoFast(tiktokInput);
+        if (mediaInput.platform === 'tiktok' && mediaInput.kind === 'video') {
+          await playTikTokVideoFast(mediaInput);
           return;
         }
 
-        markTiming('extracting TikTok queue');
-        const mediaItems = await extractTikTokMedia(tiktokInput);
+        markTiming(`extracting ${mediaInput.platform} queue`);
+        const mediaItems = await extractMedia(mediaInput);
         markTiming(`extracted ${mediaItems.length} media item(s)`);
         await playMediaQueue(mediaItems);
       } catch (error) {
@@ -37,12 +35,12 @@ export function registerPlayCommand(program: Command): void {
     });
 }
 
-export async function playTikTokVideoFast(input: TikTokInput): Promise<void> {
+export async function playTikTokVideoFast(input: MediaInput): Promise<void> {
   markTiming('using TikTok video direct stream path');
 
   try {
     markTiming('extracting direct TikTok stream');
-    const [media] = await extractTikTokMedia(input);
+    const [media] = await extractMedia(input);
     markTiming('direct TikTok stream extracted');
     console.log(renderNowPlaying(media));
     markTiming('starting player');
@@ -60,7 +58,7 @@ export async function playTikTokVideoFast(input: TikTokInput): Promise<void> {
   }
 }
 
-export function createFastTikTokVideoMedia(input: TikTokInput): MediaInfo {
+export function createFastTikTokVideoMedia(input: MediaInput): MediaInfo {
   return {
     title: 'TikTok video',
     streamUrl: input.url,
@@ -68,43 +66,5 @@ export function createFastTikTokVideoMedia(input: TikTokInput): MediaInfo {
   };
 }
 
-export function parseTikTokInput(value: string): TikTokInput {
-  try {
-    const url = new URL(value);
-
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-      throw new UserFacingError('URL must start with http:// or https://.');
-    }
-
-    if (!allowedTikTokHosts.has(url.hostname.toLowerCase())) {
-      throw new UserFacingError('TikTok is currently the only supported platform.');
-    }
-
-    return {
-      url: url.toString(),
-      kind: classifyTikTokPath(url.pathname),
-    };
-  } catch (error) {
-    if (error instanceof UserFacingError) {
-      throw error;
-    }
-
-    throw new UserFacingError('Please provide a valid TikTok URL.');
-  }
-}
-
-export function classifyTikTokPath(pathname: string): TikTokInputKind {
-  const normalizedPath = pathname.toLowerCase();
-
-  if (normalizedPath.includes('/playlist/') || normalizedPath.includes('/collection/')) {
-    return 'playlist';
-  }
-
-  if (normalizedPath.includes('/video/')) {
-    return 'video';
-  }
-
-  return 'profile';
-}
-
-export const parseMediaUrl = parseTikTokInput;
+export { classifyTikTokPath, classifyYouTubeUrl, parseMediaInput } from '../services/media-input.js';
+export const parseMediaUrl = parseMediaInput;

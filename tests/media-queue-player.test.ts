@@ -33,6 +33,6 @@ describe('playMediaQueue', () => {
   });
 
   it('rejects empty queues', async () => {
-    await expect(playMediaQueue([], { write: vi.fn() })).rejects.toThrow('No playable TikTok videos found.');
+    await expect(playMediaQueue([], { write: vi.fn() })).rejects.toThrow('No playable media found.');
   });
 });

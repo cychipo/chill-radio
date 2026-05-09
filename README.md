@@ -12,41 +12,34 @@
 
 ## Trạng thái hiện tại
 
-Dự án đang ở giai đoạn setup codebase. Plan triển khai ban đầu nằm tại:
-
-```text
-plans/260503-1450-setup-chill-radio-codebase/plan.md
-```
-
-Các tính năng như playlist, thanh tiến trình và điều khiển bằng phím sẽ được triển khai sau khi MVP phát một track hoạt động ổn định.
+Dự án hiện hỗ trợ phát TikTok và YouTube qua `chill-radio play <url>` hoặc giao diện tương tác `chill-radio start`. TikTok hỗ trợ video/profile/playlist; YouTube hỗ trợ video/playlist/livestream public mà `yt-dlp` resolve được.
 
 ## Tính năng dự kiến
 
 ### MVP
 
 ```bash
-chill-radio play <tiktok-url>
+chill-radio play <url>
 chill-radio start
 ```
 
-`play` là lệnh một lần cho script/dev smoke test. `start` mở giao diện terminal tương tác để dán TikTok URL, xem tiến trình và dùng phím Space/next/prev/quit.
+`play` là lệnh một lần cho script/dev smoke test. `start` mở giao diện terminal tương tác để dán TikTok hoặc YouTube URL, xem tiến trình và dùng phím Space/next/prev/quit.
 
 Luồng xử lý hiện tại:
 
-1. Nhận TikTok URL từ terminal.
-2. Phân loại URL thành video, profile/kênh, hoặc playlist/collection.
-3. Với video URL: đưa URL gốc trực tiếp cho `mpv` + native `yt-dlp` hook để bắt đầu phát nhanh hơn.
-4. Với profile/kênh hoặc playlist/collection: dùng `yt-dlp` để trích xuất queue rồi phát tuần tự các video.
-5. Hiển thị tên bài, kênh/uploader, thời lượng nếu có trước mỗi video; riêng video fast path hiển thị tối giản trước khi phát.
+1. Nhận TikTok hoặc YouTube URL từ terminal.
+2. Phân loại platform và loại URL: video, profile/kênh, playlist/collection, hoặc livestream.
+3. Với TikTok video URL: giữ fast path đưa URL gốc trực tiếp cho `mpv` + native `yt-dlp` hook để bắt đầu phát nhanh hơn.
+4. Với TikTok profile/playlist và YouTube video/playlist/livestream: dùng `yt-dlp` để trích xuất queue rồi phát tuần tự media resolve được.
+5. Hiển thị tên bài, kênh/uploader, thời lượng nếu có trước mỗi item; livestream có thể không có tổng thời lượng.
 6. Trong `start`, render elapsed/remaining time, queue position, progress bar và phím điều khiển `[Space]`, `[N/→]`, `[P/←]`, `[Q]`.
 7. Phát audio bằng `mpv` chạy nền.
 8. Trả lỗi dễ hiểu thay vì crash với stack trace thô.
 
 ### Sau MVP
 
-- Mở rộng sang YouTube và SoundCloud.
-- Thanh tiến trình dạng `[=====>----] 1:20 / 3:45`.
-- Phím tắt trong terminal: pause/resume, tua tới/lùi.
+- Mở rộng sang SoundCloud.
+- Hỗ trợ YouTube channel/user feed nếu cần ngoài video/playlist/livestream.
 - Post-install tự tải binary phù hợp cho macOS, Linux, Windows.
 
 ## Ngăn xếp công nghệ dự kiến
@@ -109,7 +102,7 @@ Dùng `tsx` để chạy trực tiếp source TypeScript:
 
 ```bash
 npm run dev -- --help
-npm run dev -- play <tiktok-url>
+npm run dev -- play <url>
 npm run dev -- start
 ```
 
@@ -126,25 +119,28 @@ Kỳ vọng: CLI trả lỗi dễ hiểu và exit non-zero, không in stack trac
 Để test phát nhạc thật trên máy dev:
 
 1. Chạy `npm install` hoặc `node scripts/postinstall.js` để chuẩn bị native `yt-dlp` và bundled `mpv` trên macOS.
-2. Chọn một TikTok URL public mà `yt-dlp` hỗ trợ.
+2. Chọn TikTok/YouTube URL public mà `yt-dlp` hỗ trợ.
 3. Chạy một hoặc nhiều lệnh tùy loại URL:
 
 ```bash
 npm run dev -- play "https://www.tiktok.com/@creator/video/123"
 npm run dev -- play "https://www.tiktok.com/@creator"
 npm run dev -- play "https://www.tiktok.com/@creator/playlist/name-123"
+npm run dev -- play "https://www.youtube.com/watch?v=abc123"
+npm run dev -- play "https://www.youtube.com/playlist?list=PL123"
+npm run dev -- play "https://www.youtube.com/live/abc123"
 ```
 
 Kỳ vọng:
 
 - CLI in thông tin bài đang phát trước mỗi video.
 - `yt-dlp` lấy được audio stream.
-- Video URL phát một item.
+- Video/livestream URL phát một item.
 - Profile/kênh hoặc playlist/collection phát tuần tự các item trích xuất được.
 - `mpv` bắt đầu phát audio.
 - Khi URL bị chặn/không hỗ trợ hoặc queue rỗng, CLI báo lỗi ngắn gọn.
 
-Không dùng live URL trong unit test mặc định vì TikTok thay đổi thường xuyên, có thể cần cookies/auth, hoặc bị giới hạn vùng.
+Không dùng live URL trong unit test mặc định vì TikTok/YouTube thay đổi thường xuyên, có thể cần cookies/auth, hoặc bị giới hạn vùng.
 
 ### 5. Smoke test bản build
 

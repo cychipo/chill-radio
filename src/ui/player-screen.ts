@@ -19,8 +19,8 @@ export type LoadingScreenState = {
   frame: number;
 };
 
-const screenWidth = 62;
-const innerWidth = screenWidth - 4;
+const minimumScreenWidth = 62;
+const terminalPadding = 2;
 const unsafeTerminalPattern = /[][[\]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/g;
 
 export function renderProgressBar(elapsedSeconds: number | undefined, durationSeconds: number | undefined, width = 30): string {
@@ -51,7 +51,7 @@ export function renderLoadingScreen(state: LoadingScreenState): string {
       `${formatDuration(state.elapsedSeconds)} elapsed`,
     ]),
     renderBox('Please Wait', [
-      'TikTok/yt-dlp can take a while to resolve media.',
+      'yt-dlp can take a while to resolve media.',
       'The app is still working; playback will start after extraction.',
     ]),
   ].join('\n');
@@ -67,8 +67,8 @@ export function renderPlayerScreen(state: PlayerScreenState): string {
   return [
     renderHeader(),
     renderBox('Now Playing', [
-      `Title  ${chalk.white.bold(truncateText(title, 48))}`,
-      `Artist ${chalk.gray(truncateText(uploader, 48))}`,
+      `Title  ${chalk.white.bold(title)}`,
+      `Artist ${chalk.gray(uploader)}`,
       `Queue  ${state.queueIndex + 1}/${state.queueLength}    Status ${state.paused ? chalk.yellow(status) : chalk.green(status)}`,
     ]),
     renderBox('Progress', [
@@ -76,7 +76,7 @@ export function renderPlayerScreen(state: PlayerScreenState): string {
       `${formatDuration(elapsed)} elapsed   ${formatRemaining(elapsed, duration)} left   ${formatDuration(duration)} total`,
     ]),
     ...(state.errorMessage
-      ? [renderBox('Playback Error', [chalk.red(truncateText(sanitizeTerminalText(state.errorMessage), innerWidth))])]
+      ? [renderBox('Playback Error', [chalk.red(sanitizeTerminalText(state.errorMessage))])]
       : []),
     renderBox('Controls', [
       `${keyLabel('Space')} pause/resume   ${keyLabel('N/→')} next`,
@@ -89,10 +89,10 @@ export function renderStartScreen(message?: string): string {
   return [
     renderHeader(),
     renderBox('Tune In', [
-      'Paste a TikTok video, profile, or playlist URL.',
+      'Paste a TikTok or YouTube media URL.',
       'Press Enter to load the station.',
       '',
-      `${chalk.gray('Supported')} TikTok only for this MVP`,
+      `${chalk.gray('Supported')} TikTok videos/profiles/playlists and YouTube videos/playlists/livestreams`,
     ]),
     message ? renderBox('Status', [message]) : renderBox('Controls', [`${keyLabel('Ctrl+C')} quit`]),
   ].join('\n');
@@ -103,16 +103,23 @@ export function sanitizeTerminalText(value: string): string {
 }
 
 function renderHeader(): string {
+  const screenWidth = getScreenWidth();
+  const innerWidth = getInnerWidth(screenWidth);
+
   return [
-    chalk.cyan('╭────────────────────────────────────────────────────────────╮'),
-    chalk.cyan('│') + centerText(`${chalk.bold('chill-radio')}  ${chalk.gray('TikTok terminal player')}`, innerWidth) + chalk.cyan('│'),
-    chalk.cyan('╰────────────────────────────────────────────────────────────╯'),
+    chalk.cyan(`╭${'─'.repeat(screenWidth - 2)}╮`),
+    chalk.cyan('│') + centerText(`${chalk.bold('chill-radio')}  ${chalk.gray('terminal media player')}`, innerWidth) + chalk.cyan('│'),
+    chalk.cyan(`╰${'─'.repeat(screenWidth - 2)}╯`),
   ].join('\n');
 }
 
 function renderBox(title: string, lines: string[]): string {
+  const screenWidth = getScreenWidth();
+  const innerWidth = getInnerWidth(screenWidth);
   const top = `${chalk.cyan('╭')} ${chalk.cyan.bold(title)} ${chalk.cyan('─'.repeat(Math.max(screenWidth - visibleLength(title) - 5, 0)))}${chalk.cyan('╮')}`;
-  const body = lines.map((line) => `${chalk.cyan('│')} ${padVisible(fitVisible(line, innerWidth), innerWidth)} ${chalk.cyan('│')}`);
+  const body = lines
+    .flatMap((line) => wrapVisibleLine(line, innerWidth))
+    .map((line) => `${chalk.cyan('│')} ${padVisible(line, innerWidth)} ${chalk.cyan('│')}`);
   const bottom = `${chalk.cyan('╰')}${chalk.cyan('─'.repeat(screenWidth - 2))}${chalk.cyan('╯')}`;
   return [top, ...body, bottom].join('\n');
 }
@@ -132,16 +139,45 @@ function padVisible(value: string, width: number): string {
   return `${value}${' '.repeat(padding)}`;
 }
 
-function truncateText(value: string, maxLength: number): string {
-  if (value.length <= maxLength) {
-    return value;
+function wrapVisibleLine(value: string, width: number): string[] {
+  if (visibleLength(value) <= width) {
+    return [value];
   }
 
-  return `${value.slice(0, Math.max(maxLength - 1, 0))}…`;
+  const words = value.split(' ');
+  const lines: string[] = [];
+  let current = '';
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+
+    if (visibleLength(next) <= width) {
+      current = next;
+      continue;
+    }
+
+    if (current) {
+      lines.push(current);
+      current = word;
+      continue;
+    }
+
+    lines.push(word);
+  }
+
+  if (current) {
+    lines.push(current);
+  }
+
+  return lines.length > 0 ? lines : [''];
 }
 
-function fitVisible(value: string, maxLength: number): string {
-  return visibleLength(value) <= maxLength ? value : truncateText(value, maxLength);
+function getScreenWidth(): number {
+  return Math.max(minimumScreenWidth, (process.stdout.columns ?? minimumScreenWidth) - terminalPadding);
+}
+
+function getInnerWidth(screenWidth = getScreenWidth()): number {
+  return screenWidth - 4;
 }
 
 function visibleLength(value: string): number {

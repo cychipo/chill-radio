@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapExtractorError, normalizeMediaInfo, normalizeTikTokResult } from '../src/services/media-extractor.js';
+import { mapExtractorError, normalizeMediaInfo, normalizeMediaResult } from '../src/services/media-extractor.js';
 
 describe('normalizeMediaInfo', () => {
   it('normalizes extractor metadata', () => {
@@ -37,6 +37,28 @@ describe('normalizeMediaInfo', () => {
       'Could not find a playable audio stream.',
     );
   });
+
+  it('allows YouTube livestreams without duration', () => {
+    expect(
+      normalizeMediaInfo(
+        {
+          title: 'live radio',
+          channel: 'station',
+          url: 'https://cdn.example/live',
+          webpage_url: 'https://www.youtube.com/live/abc123',
+        },
+        'https://www.youtube.com/live/abc123',
+        'youtube',
+      ),
+    ).toEqual({
+      title: 'live radio',
+      uploader: 'station',
+      streamUrl: 'https://cdn.example/live',
+      webpageUrl: 'https://www.youtube.com/live/abc123',
+      durationSeconds: undefined,
+      httpHeaders: undefined,
+    });
+  });
 });
 
 describe('mapExtractorError', () => {
@@ -47,10 +69,10 @@ describe('mapExtractorError', () => {
   });
 });
 
-describe('normalizeTikTokResult', () => {
-  it('returns one media item for a video result', () => {
+describe('normalizeMediaResult', () => {
+  it('returns one media item for a TikTok video result', () => {
     expect(
-      normalizeTikTokResult(
+      normalizeMediaResult(
         {
           title: 'focus clip',
           channel: 'creator',
@@ -58,14 +80,14 @@ describe('normalizeTikTokResult', () => {
           url: 'https://cdn.example/video-audio',
           webpage_url: 'https://www.tiktok.com/@creator/video/1',
         },
-        { url: 'https://www.tiktok.com/@creator/video/1', kind: 'video' },
+        { url: 'https://www.tiktok.com/@creator/video/1', platform: 'tiktok', kind: 'video' },
       ),
     ).toHaveLength(1);
   });
 
-  it('normalizes profile and playlist entries into a queue', () => {
+  it('normalizes TikTok profile and playlist entries into a queue', () => {
     expect(
-      normalizeTikTokResult(
+      normalizeMediaResult(
         {
           entries: [
             {
@@ -82,28 +104,51 @@ describe('normalizeTikTokResult', () => {
             },
           ],
         },
-        { url: 'https://www.tiktok.com/@creator', kind: 'profile' },
+        { url: 'https://www.tiktok.com/@creator', platform: 'tiktok', kind: 'profile' },
       ).map((media) => media.title),
     ).toEqual(['first', 'second']);
   });
 
-  it('skips unplayable entries when at least one entry is playable', () => {
+  it('normalizes YouTube playlist entries into a queue', () => {
     expect(
-      normalizeTikTokResult(
+      normalizeMediaResult(
         {
           entries: [
-            { title: 'missing stream' },
-            { title: 'playable', url: 'https://cdn.example/playable' },
+            {
+              title: 'first video',
+              channel: 'radio',
+              duration: 180,
+              url: 'https://cdn.example/youtube-first',
+              webpage_url: 'https://www.youtube.com/watch?v=1',
+            },
+            {
+              title: 'second video',
+              channel: 'radio',
+              duration: 240,
+              url: 'https://cdn.example/youtube-second',
+              webpage_url: 'https://www.youtube.com/watch?v=2',
+            },
           ],
         },
-        { url: 'https://www.tiktok.com/@creator/playlist/list-1', kind: 'playlist' },
+        { url: 'https://www.youtube.com/playlist?list=PL123', platform: 'youtube', kind: 'playlist' },
+      ).map((media) => media.title),
+    ).toEqual(['first video', 'second video']);
+  });
+
+  it('skips unplayable entries when at least one entry is playable', () => {
+    expect(
+      normalizeMediaResult(
+        {
+          entries: [{ title: 'missing stream' }, { title: 'playable', url: 'https://cdn.example/playable' }],
+        },
+        { url: 'https://www.youtube.com/playlist?list=PL123', platform: 'youtube', kind: 'playlist' },
       ).map((media) => media.title),
     ).toEqual(['playable']);
   });
 
-  it('rejects empty queues', () => {
+  it('rejects empty YouTube queues', () => {
     expect(() =>
-      normalizeTikTokResult({ entries: [] }, { url: 'https://www.tiktok.com/@creator', kind: 'profile' }),
-    ).toThrow('No playable TikTok videos found.');
+      normalizeMediaResult({ entries: [] }, { url: 'https://www.youtube.com/playlist?list=PL123', platform: 'youtube', kind: 'playlist' }),
+    ).toThrow('No playable YouTube videos found.');
   });
 });
